@@ -1,0 +1,23 @@
+{
+  "name": "kindle-display",
+  "version": "0.1.0",
+  "author": "dennisreimann",
+  "license": "MIT",
+  "description": "kindle status display server",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:dennisreimann/kindle-display.git"
+  },
+  "homepage": "https://github.com/dennisreimann/kindle-display",
+  "bugs": "https://github.com/dennisreimann/kindle-display/issues",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "deploy": "scp -r cron.sh data.sh index.js package*.json public views $DISPLAY_HOST:$DISPLAY_DIR",
+    "check": "scp -r $DISPLAY_HOST:$DISPLAY_DIR/public/display.png public && open public/display.png"
+  },
+  "dependencies": {
+    "express": "4.17.1",
+    "pug": "2.0.4"
+  }
+}

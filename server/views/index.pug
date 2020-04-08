@@ -1,0 +1,20 @@
+extends _layout
+
+block content
+  .bg
+  .info
+    h3.price.price--dollar
+      span.curr $
+      span.rate= Math.round(rates[1].rate)
+
+    h1= blockcount
+
+    h3.price.price--euro
+      span.curr €
+      span.rate= Math.round(rates[0].rate)
+
+  if quote
+    blockquote
+      p= quote.body
+      if quote.author && quote.author.name
+        p.author= `— ${quote.author.name}`
