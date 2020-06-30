@@ -10,16 +10,13 @@ source $envFile
 # Blockchain
 blockcount=$(bitcoin-cli -rpcuser=$DISPLAY_BITCOIN_RPC_USER -rpcpassword=$DISPLAY_BITCOIN_RPC_PASS getblockcount 2> /dev/null || echo "null")
 
-# Bitstamp
-if [[ ${BITSTAMP_ON} == "true" ]]; then
+# Fetch rates using custom BTCPay or Bitstamp as fallback
+if [[ "${BTCPAY_API_TOKEN}" && "${BTCPAY_HOST}" ]]; then
+  rates=$(curl -s -f -H "Authorization: Basic $BTCPAY_API_TOKEN" $BTCPAY_HOST/rates | jq -r '.data // "[]"')
+else
   usdrate=$(curl -s -f https://www.bitstamp.net/api/v2/ticker/btcusd/ | jq -r '.last // "[]"')
   eurrate=$(curl -s -f https://www.bitstamp.net/api/v2/ticker/btceur/ | jq -r '.last // "[]"')
-  rates=$( jo -p -a $( jo rate=$eurrate ) $( jo rate=$usdrate ))
-else
-  # BTCPay
-  if [[ "${BTCPAY_API_TOKEN}" && "${BTCPAY_HOST}" ]]; then
-    rates=$(curl -s -f -H "Authorization: Basic $BTCPAY_API_TOKEN" $BTCPAY_HOST/rates | jq -r '.data // "[]"')
-  fi
+  rates=$(jo -p -a $(jo rate="$usdrate" code="USD") $(jo rate="$eurrate" code="EUR"))
 fi
 
 # Bitcoin Quotes
