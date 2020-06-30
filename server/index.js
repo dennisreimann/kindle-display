@@ -1,7 +1,7 @@
 const { readFileSync } = require('fs')
 const express = require('express')
 const app = express()
-const port = 3030
+const { DISPLAY_SERVER_PORT: port } = process.env
 
 app.set('view engine', 'pug')
 

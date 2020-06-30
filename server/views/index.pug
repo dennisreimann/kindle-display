@@ -1,17 +1,19 @@
 extends _layout
-
 block content
+  - const hasRates = rates && rates.length === 2
   .bg
   .info
-    h3.price.price--dollar
-      span.curr $
-      span.rate= Math.round(rates[1].rate)
+    if hasRates
+      h3.price.price--dollar
+        span.curr $
+        span.rate= Math.round(rates[1].rate)
 
-    h1= blockcount
+    h1!= blockcount || '&nbsp;'
 
-    h3.price.price--euro
-      span.curr €
-      span.rate= Math.round(rates[0].rate)
+    if hasRates
+      h3.price.price--euro
+        span.curr €
+        span.rate= Math.round(rates[0].rate)
 
   if quote
     blockquote

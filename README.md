@@ -1,5 +1,6 @@
 # Kindle Status Display
 
+My [Bitcoin Status Display](https://d11n.net/kindle-status-display.html) made with a jailbroken Kindle.
 Original idea and setup taken from [@naltatis' kindle-display](https://github.com/naltatis/kindle-display).
 
 ![Framed](.github/images/framed.jpg)
@@ -29,7 +30,7 @@ I recommend you **fork this repository** and modify the `./data.sh` and visual r
 - Node.js (assembles the data and runs the webserver)
 - firefox (takes the screenshot of the webpage)
 - pngcrush (converts the screenshot to a greyscale image)
-- jo / jq (to generate the JSON data file)
+- jo (to generate the JSON data file)
 
 ### Installation
 
@@ -39,6 +40,9 @@ git clone git@github.com:username/kindle-display.git
 
 # Go to the server directory
 cd kindle-display/server
+
+# Copy sample env file and adapt the settings
+cp .env.sample .env
 
 # Install the dependencies
 npm install
