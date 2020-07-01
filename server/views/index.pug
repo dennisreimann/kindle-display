@@ -1,6 +1,8 @@
 extends _layout
 block content
   - const hasRates = rates && rates.length === 2
+  - const displayQuote = quote && quote.body.length < 250
+  - const displayEuro = !displayQuote || quote && quote.body.length < 100
   .bg
   .info
     if hasRates
@@ -10,12 +12,12 @@ block content
 
     h1!= blockcount || '&nbsp;'
 
-    if hasRates
+    if displayEuro
       h3.price.price--euro
         span.curr €
         span.rate= Math.round(rates[0].rate)
 
-  if quote
+  if displayQuote
     blockquote
       p= quote.body
       if quote.author && quote.author.name
