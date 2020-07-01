@@ -100,6 +100,33 @@ vi /etc/crontab/root
 sh /mnt/base-us/RUNME.sh
 ```
 
+#### Notes regarding USB Network (via [openoms](https://gist.github.com/openoms/56979d0859d7063cb734bdacabf1068f))
+
+Unmount and eject your Kindle (You might also want to unplug it, some devices behave strangely when toggling usbnet/usbms while plugged in).
+
+You'll need to be in debug mode to run private commands.
+So, on the Home screen, bring up the search bar (by hitting [DEL] on devices with a keyboard, or the keyboard key on a K4, for example), and enter:
+
+```bash
+;debugOn
+
+# now we can enable usbnet
+~usbNetwork
+```
+
+On the desktop:
+
+```bash
+dmesg | grep usb0
+
+# example output
+> [367478.835928] cdc_subset 1-2:1.1 enp0s20u2i1: renamed from usb0
+```
+
+Use `ifconfig enp0s20u2i1 192.168.15.201`
+
+To log in `ssh root@192.168.15.244` and just press enter.
+
 ## Images
 
 ![Framing](.github/images/framing.jpg)
