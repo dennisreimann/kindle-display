@@ -1,8 +1,8 @@
 extends _layout
 block content
   - const hasRates = rates && rates.length === 2
-  - const displayQuote = quote && quote.body.length < 250
-  - const displayEuro = !displayQuote || quote && quote.body.length < 100
+  - const displayQuote = quote && quote.body.length < 220
+  - const displayEuro = hasRates && (!displayQuote || quote && quote.body.length < 115)
   .bg
   .info
     if hasRates
@@ -12,8 +12,8 @@ block content
 
     h1!= blockcount || '&nbsp;'
 
-    if displayEuro
-      h3.price.price--euro
+    if hasRates
+      h3.price.price--euro(class=displayEuro ? null : "price--hidden")
         span.curr €
         span.rate= Math.round(rates[0].rate)
 
