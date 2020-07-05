@@ -1,21 +1,22 @@
 extends _layout
 block content
-  - const hasRates = rates && rates.length === 2
+  - const usdRate = rates && rates.find(rate => rate.code === 'USD')
+  - const eurRate = rates && rates.find(rate => rate.code === 'EUR')
   - const displayQuote = quote && quote.body.length < 220
-  - const displayEuro = hasRates && (!displayQuote || quote && quote.body.length < 115)
+  - const displayEuro = eurRate && (!displayQuote || quote && quote.body.length < 115)
   .bg
   .info
-    if hasRates
+    if usdRate
       h3.price.price--dollar
         span.curr $
-        span.rate= Math.round(rates[1].rate)
+        span.rate= Math.round(usdRate.rate)
 
     h1!= blockcount || '&nbsp;'
 
-    if hasRates
-      h3.price.price--euro(class=displayEuro ? null : "price--hidden")
+    if eurRate
+      h3.price.price--euro(class=displayEuro ? null : 'price--hidden')
         span.curr €
-        span.rate= Math.round(rates[0].rate)
+        span.rate= Math.round(eurRate.rate)
 
   if displayQuote
     blockquote
