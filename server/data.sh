@@ -13,7 +13,9 @@ blockcount=$(bitcoin-cli -rpcuser=$DISPLAY_BITCOIN_RPC_USER -rpcpassword=$DISPLA
 # Fetch rates using custom BTCPay or Bitstamp as fallback
 if [[ "${BTCPAY_API_TOKEN}" && "${BTCPAY_HOST}" ]]; then
   rates=$(curl -s -f -H "Authorization: Basic $BTCPAY_API_TOKEN" $BTCPAY_HOST/rates | jq -r '.data // "[]"')
-else
+fi
+
+if [[ -z ${rates} ]]; then
   usdrate=$(curl -s -f https://www.bitstamp.net/api/v2/ticker/btcusd/ | jq -r '.last // "[]"')
   eurrate=$(curl -s -f https://www.bitstamp.net/api/v2/ticker/btceur/ | jq -r '.last // "[]"')
   rates=$(jo -p -a $(jo rate="$usdrate" code="USD") $(jo rate="$eurrate" code="EUR"))
