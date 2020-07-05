@@ -8,9 +8,12 @@ app.set('view engine', 'pug')
 app.use(express.static('public'))
 
 app.get('/', (req, res) => {
-  const data = JSON.parse(readFileSync('data.json', 'utf8'))
-
-  res.render('index', data)
+  try {
+    const data = JSON.parse(readFileSync('data.json', 'utf8'))
+    res.render('index', data)
+  } catch (err) {
+    res.status(500).send('Could not open or parse data.json')
+  }
 })
 
 app.listen(port, () => console.log(`Running at http://localhost:${port}`))
