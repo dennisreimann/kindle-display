@@ -7,22 +7,30 @@ now=$(date +'%F %R')
 # load config
 source $envFile
 
+# use clearnet by default
+tor=""
+# check for Tor and use it if working
+torCheck=$(torsocks curl -s https://check.torproject.org/ 2>/dev/null | grep -c "Congratulations. This browser is configured to use Tor.")
+if [ ${torCheck} -gt 0 ]; then
+  tor="torsocks"
+fi
+
 # Blockchain
 blockcount=$(bitcoin-cli -rpcuser=$DISPLAY_BITCOIN_RPC_USER -rpcpassword=$DISPLAY_BITCOIN_RPC_PASS getblockcount 2> /dev/null || echo "null")
 
 # Fetch rates using custom BTCPay or Bitstamp as fallback
 if [[ "${BTCPAY_API_TOKEN}" && "${BTCPAY_HOST}" ]]; then
-  rates=$(curl -s -f -H "Authorization: Basic $BTCPAY_API_TOKEN" $BTCPAY_HOST/rates | jq -r '.data // "[]"')
+  rates=$( $tor curl -s -f -H "Authorization: Basic $BTCPAY_API_TOKEN" $BTCPAY_HOST/rates | jq -r '.data // "[]"')
 fi
 
 if [[ -z ${rates} ]]; then
-  usdrate=$(curl -s -f https://www.bitstamp.net/api/v2/ticker/btcusd/ | jq -r '.last // "[]"')
-  eurrate=$(curl -s -f https://www.bitstamp.net/api/v2/ticker/btceur/ | jq -r '.last // "[]"')
+  usdrate=$( $tor curl -s -f https://api.kraken.com/0/public/Ticker?pair=XBTUSD | jq -r '.result.XXBTZUSD.c[0] // "[]"')
+  eurrate=$( $tor curl -s -f https://api.kraken.com/0/public/Ticker?pair=XBTEUR | jq -r '.result.XXBTZEUR.c[0] // "[]"')
   rates=$(jo -p -a $(jo rate="$usdrate" code="USD") $(jo rate="$eurrate" code="EUR"))
 fi
 
 # Bitcoin Quotes
-quote=$(curl -s -f https://www.bitcoin-quotes.com/quotes/random.json 2> /dev/null || echo "null")
+quote=$( $tor curl -s -f https://www.bitcoin-quotes.com/quotes/random.json 2> /dev/null || echo "null")
 
 # JSON
 jo -p date="$now" blockcount="$blockcount" rates="$rates" quote="$quote" > $dir/data.json
