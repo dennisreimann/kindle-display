@@ -15,7 +15,13 @@ if [ ${torCheck} -gt 0 ]; then
 fi
 
 # Blockchain
-blockcount=$(bitcoin-cli -rpcuser=$DISPLAY_BITCOIN_RPC_USER -rpcpassword=$DISPLAY_BITCOIN_RPC_PASS getblockcount 2> /dev/null || echo "null")
+if [[ "${DISPLAY_BITCOIN_RPC_USER}" && "${DISPLAY_BITCOIN_RPC_PASS}" ]]; then
+  blockcount=$(bitcoin-cli -rpcuser=$DISPLAY_BITCOIN_RPC_USER -rpcpassword=$DISPLAY_BITCOIN_RPC_PASS getblockcount 2> /dev/null || echo "null")
+fi
+
+if [[ -z ${blockcount} ]]; then
+  blockcount=$($tor curl -s -f https://blockchain.info/q/getblockcount 2> /dev/null || echo "null")
+fi
 
 # Fetch rates using custom BTCPay or Kraken as fallback
 if [[ "${BTCPAY_API_TOKEN}" && "${BTCPAY_HOST}" ]]; then
