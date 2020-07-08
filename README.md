@@ -30,6 +30,7 @@ I recommend you **fork this repository** and modify the `./data.sh` and visual r
 - Node.js (assembles the data and runs the webserver)
 - firefox (takes the screenshot of the webpage)
 - pngcrush (converts the screenshot to a greyscale image)
+- jq (to process the JSON data)
 - jo (to generate the JSON data file)
 
 ### Installation
