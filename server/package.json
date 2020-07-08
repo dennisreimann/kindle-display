@@ -1,6 +1,6 @@
 {
   "name": "kindle-display",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "author": "dennisreimann",
   "license": "MIT",
   "description": "kindle status display server",
