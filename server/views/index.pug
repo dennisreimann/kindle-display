@@ -1,7 +1,7 @@
 extends _layout
 block content
   - const usdRate = rates && rates.find(rate => rate.code === 'USD')
-  - const eurRate = rates && rates.find(rate => rate.code === 'EUR')
+  - const eurRate = rates && rates.find(rate => rate.rate != null && rate.code === 'EUR')
   - const displayQuote = quote && quote.body.length < 220
   - const displayEuro = eurRate && (!displayQuote || quote && quote.body.length < 115)
   .bg

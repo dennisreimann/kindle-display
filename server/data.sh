@@ -25,18 +25,19 @@ fi
 # Fetch rates using custom BTCPay or Kraken as fallback
 if [[ "${BTCPAY_API_TOKEN}" && "${BTCPAY_HOST}" ]]; then
   usdrate=$($tor curl -s -f -H "Authorization: Basic $BTCPAY_API_TOKEN" $BTCPAY_HOST/rates/BTC/USD | jq -r '.data.rate')
-  eurrate=$($tor curl -s -f -H "Authorization: Basic $BTCPAY_API_TOKEN" $BTCPAY_HOST/rates/BTC/EUR | jq -r '.data.rate')
+  
+  if [[ ${DISPLAY_SECOND_EXCHANGE_RATE} = true ]]; then
+    eurrate=$($tor curl -s -f -H "Authorization: Basic $BTCPAY_API_TOKEN" $BTCPAY_HOST/rates/BTC/EUR | jq -r '.data.rate')
+  fi
 fi
 if [[ "${usdrate}" = "" && ${DISPLAY_FALLBACK_RATES} = true ]]; then
   usdrate=$($tor curl -s -f https://api.kraken.com/0/public/Ticker\?pair=XBTUSD | jq -r '.result.XXBTZUSD.c[0] // "[]"')
 fi
-if [[ "${eurrate}" = "" && ${DISPLAY_FALLBACK_RATES} = true ]]; then
+if [[ "${eurrate}" = "" && ${DISPLAY_FALLBACK_RATES} = true && ${DISPLAY_SECOND_EXCHANGE_RATE} = true ]]; then
   eurrate=$($tor curl -s -f https://api.kraken.com/0/public/Ticker\?pair=XBTEUR | jq -r '.result.XXBTZEUR.c[0] // "[]"')
 fi
 
-if [[ "${usdrate}" && "${eurrate}" ]]; then
-  rates=$(jo -p -a $(jo rate="$usdrate" code="USD") $(jo rate="$eurrate" code="EUR"))
-fi
+rates=$(jo -p -a $(jo rate="$usdrate" code="USD") $(jo rate="$eurrate" code="EUR"))
 
 # Bitcoin Quotes
 quote=$( $tor curl -s -f https://www.bitcoin-quotes.com/quotes/random.json 2> /dev/null || echo "null")
