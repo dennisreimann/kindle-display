@@ -5,6 +5,7 @@ FILE=display.png
 
 savePower=false
 batteryLevel=$(lipc-get-prop com.lab126.powerd battLevel)
+batteryBar=$(($batteryLevel/10))
 now=$(date +'%F %R')
 
 cd "$(dirname "$0")"
@@ -26,10 +27,20 @@ fi
 
 eips 0 0 "$now"
 
-# display low battery level
-if [ $batteryLevel -le 25 ]; then
-  eips 47 0 "$batteryLevel%"
-fi
+# display battery level
+case "$batteryBar" in
+  0)  eips 38 0 "|-----$batteryLevel--->|" ;;
+  1)  eips 38 0 "|----$batteryLevel-->=|" ;;
+  2)  eips 38 0 "|----$batteryLevel->==|" ;;
+  3)  eips 38 0 "|----$batteryLevel>===|" ;;
+  4)  eips 38 0 "|----$batteryLevel====|" ;;
+  5)  eips 38 0 "|----$batteryLevel====|" ;;
+  6)  eips 38 0 "|--->$batteryLevel====|" ;;
+  7)  eips 38 0 "|-->=$batteryLevel====|" ;;
+  8)  eips 38 0 "|->==$batteryLevel====|" ;;
+  9)  eips 38 0 "|>===$batteryLevel====|" ;;
+  10)  eips 38 0 "|====100===|" ;;
+esac
 
 if [ "$savePower" = true ]; then
   # power down networking
