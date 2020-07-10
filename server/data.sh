@@ -13,6 +13,10 @@ torCheck=$(torsocks curl -s https://check.torproject.org/ 2>/dev/null | grep -c 
 if [ ${torCheck} -gt 0 ]; then
   tor="torsocks"
 fi
+if [[ -z "${tor}" && ${DISPLAY_FORCE_TOR} = true ]]; then
+  echo >&2 'Tor is required, but not available.'
+  exit 1
+fi
 
 # Get block height using RPC connection or Blockchain.info as fallback
 if [[ "${DISPLAY_BITCOIN_RPC_USER}" && "${DISPLAY_BITCOIN_RPC_PASS}" ]]; then
