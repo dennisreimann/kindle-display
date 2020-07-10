@@ -53,6 +53,9 @@ body {
 .price--euro {
   margin-left: 1rem;
 }
+.price--chf {
+  margin-left: 1rem;
+}
 .price--sats {
   position: absolute;
   top: 645px;

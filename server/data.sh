@@ -25,18 +25,33 @@ fi
 # Fetch rates using custom BTCPay or Kraken as fallback
 if [[ "${BTCPAY_API_TOKEN}" && "${BTCPAY_HOST}" ]]; then
   usdrate=$($tor curl -s -f -H "Authorization: Basic $BTCPAY_API_TOKEN" $BTCPAY_HOST/rates/BTC/USD | jq -r '.data.rate')
-  eurrate=$($tor curl -s -f -H "Authorization: Basic $BTCPAY_API_TOKEN" $BTCPAY_HOST/rates/BTC/EUR | jq -r '.data.rate')
-fi
-if [[ "${usdrate}" = "" && ${DISPLAY_FALLBACK_RATES} = true ]]; then
-  usdrate=$($tor curl -s -f https://api.kraken.com/0/public/Ticker\?pair=XBTUSD | jq -r '.result.XXBTZUSD.c[0] // "[]"')
-fi
-if [[ "${eurrate}" = "" && ${DISPLAY_FALLBACK_RATES} = true ]]; then
-  eurrate=$($tor curl -s -f https://api.kraken.com/0/public/Ticker\?pair=XBTEUR | jq -r '.result.XXBTZEUR.c[0] // "[]"')
+  
+  if [[ ${DISPLAY_SECOND_EXCHANGE_RATE} = true ]]; then
+    if [[ "${SECOND_EXCHANGE_RATE}" = "EUR" ]]; then
+      eurrate=$($tor curl -s -f -H "Authorization: Basic $BTCPAY_API_TOKEN" $BTCPAY_HOST/rates/BTC/EUR | jq -r '.data.rate')
+    fi
+    if [[ "${SECOND_EXCHANGE_RATE}" = "CHF" ]]; then
+      chfrate=$($tor curl -s -f -H "Authorization: Basic $BTCPAY_API_TOKEN" $BTCPAY_HOST/rates/BTC/CHF | jq -r '.data.rate')
+    fi
+  fi
 fi
 
-if [[ "${usdrate}" && "${eurrate}" ]]; then
-  rates=$(jo -p -a $(jo rate="$usdrate" code="USD") $(jo rate="$eurrate" code="EUR"))
+if [[ ${DISPLAY_FALLBACK_RATES} = true ]]; then
+  if [[ "${usdrate}" = "" ]]; then
+    usdrate=$($tor curl -s -f https://api.kraken.com/0/public/Ticker\?pair=XBTUSD | jq -r '.result.XXBTZUSD.c[0] // "[]"')
+  fi
+  
+  if [[ ${DISPLAY_SECOND_EXCHANGE_RATE} = true ]]; then
+    if [[ "${eurrate}" = "" && "${SECOND_EXCHANGE_RATE}" = "EUR" ]]; then
+      eurrate=$($tor curl -s -f https://api.kraken.com/0/public/Ticker\?pair=XBTEUR | jq -r '.result.XXBTZEUR.c[0] // "[]"')
+    fi
+    if [[ "${chfrate}" = "" && "${SECOND_EXCHANGE_RATE}" = "CHF" ]]; then
+      chfrate=$($tor curl -s -f https://api.kraken.com/0/public/Ticker?pair=XBTCHF | jq -r '.result.XBTCHF.c[0] // "[]"')
+    fi
+  fi
 fi
+
+rates=$(jo -p -a $(jo rate="$usdrate" code="USD") $(jo rate="$eurrate" code="EUR") $(jo rate="$chfrate" code="CHF"))
 
 # Bitcoin Quotes
 quote=$( $tor curl -s -f https://www.bitcoin-quotes.com/quotes/random.json 2> /dev/null || echo "null")

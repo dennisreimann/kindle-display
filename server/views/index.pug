@@ -1,9 +1,10 @@
 extends _layout
 block content
   - const usdRate = rates && rates.find(rate => rate.code === 'USD')
-  - const eurRate = rates && rates.find(rate => rate.code === 'EUR')
+  - const eurRate = rates && rates.find(rate => rate.rate != null && rate.code === 'EUR')
+  - const chfRate = rates && rates.find(rate => rate.rate != null && rate.code === 'CHF')
   - const displayQuote = quote && quote.body.length < 220
-  - const displayEuro = eurRate && (!displayQuote || quote && quote.body.length < 115)
+  - const displaySecondRate = (eurRate || chfRate) && (!displayQuote || quote && quote.body.length < 115)
   .bg
   .info
     if usdRate
@@ -14,9 +15,13 @@ block content
     h1!= blockcount || '&nbsp;'
 
     if eurRate
-      h3.price.price--euro(class=displayEuro ? null : 'price--hidden')
+      h3.price.price--euro(class=displaySecondRate ? null : 'price--hidden')
         span.curr €
         span.rate= Math.round(eurRate.rate)
+    if chfRate
+      h3.price.price--chf(class=displaySecondRate ? null : 'price--hidden')
+        span.curr CHF
+        span.rate= Math.round(chfRate.rate)
 
   if displayQuote
     blockquote
