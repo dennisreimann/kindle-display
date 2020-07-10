@@ -47,13 +47,10 @@ body {
   display: flex;
   align-items: center;
 }
-.price--dollar {
+.price--rate1 {
   margin-left: 5rem;
 }
-.price--euro {
-  margin-left: 1rem;
-}
-.price--chf {
+.price--rate2 {
   margin-left: 1rem;
 }
 .price--sats {
