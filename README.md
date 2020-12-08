@@ -64,86 +64,109 @@ Once everything works, deploy the server app and setup a cronjob to trigger the 
 
 ### Prerequisites
 
+0. (optional): `Reset to Factory Defaults` (helps to start clean)
+
+1. Connect to WiFi (only compatible with 2.4GHz hotspots, not 5GHz)
+
+2. Jailbreak   
 You need to
 [jailbreak your Kindle](https://wiki.mobileread.com/wiki/Kindle4NTHacking#Jailbreak) using the packages from the
 [mobileread forum](https://www.mobileread.com/forums/showthread.php?t=225030).
 
-I installed these according to the info in their particular READMEs:
+    1. Plug in the Kindle and copy the data.tar.gz & ENABLE_DIAGS files plus the diagnostic_logs folders to the Kindle's USB drive's root  
+    2. Safely remove the USB cable and restart the Kindle (Menu -> Settings -> Menu -> Restart)  
+    3. Once the device restarts into diagnostics mode, select "D) Exit, Reboot or Disable Diags" (using the 5-way keypad)  
+    4. Select "R) Reboot System" and "Q) To continue" (following on-screen instructions, when it tells you to use 'FW Left' to select an option, it means left on the 5-way keypad)  
+    5. Wait about 20 seconds: you should see the Jailbreak screen for a while, and the device should then restart normally  
+    6. After the Kindle restarts, you should see a new book titled "You are Jailbroken", if you see this, the jailbreak has been successful.   
 
-1. Jailbreak
-2. USBNetwork
-3. MKK
-4. KUAL
 
-### Installation
+2. Next copy the content of the following packages to the Kindle one-by-one and open `Settings` -> `Update Your Kindle`
 
-```bash
-# Connect your Kindle via usb and ssh into it
-ssh root@kindle
+   1. USBNetwork
+   2. MKK
+   3. KUAL
 
-# Make the Kindle file system writable
-mntroot rw
-
-# Create the mnt/base-us scripts according to the files in the kindle directory
-vi /mnt/base-us/RUNME.sh
-
-# Set the BASE according to your local network setup to address the server
-vi /mnt/base-us/update.sh
-
-# Create a cronjob to run the update script in regular intervals
-#
-# For instance:
-# */5 6-22 * * * /mnt/us/update.sh
-# 0 23,0,5 * * * /mnt/us/update.sh
-vi /etc/crontab/root
-
-# Execute the init script and trigger an the first render
-sh /mnt/base-us/RUNME.sh
-```
-
-#### Notes regarding USB Network
+### Activate the `~usbNetwork`
 
 Some hints via
-[openoms](https://gist.github.com/openoms/56979d0859d7063cb734bdacabf1068f)) and
+[openoms](https://gist.github.com/openoms/56979d0859d7063cb734bdacabf1068f) and
 [grnqrtr](https://github.com/rootzoll/raspiblitz/pull/1301#issuecomment-655840707), also see the
 [mobileread forum](https://www.mobileread.com/forums/showthread.php?t=204942).
 
 Unmount and eject your Kindle.
 Also unplug it, as some devices behave strangely when toggling usbnet/usbms while plugged in.
 
+#### On the Kindle
+
 Toggle USBnetwork `ON` in the launcher and plug in the cable again.
 Kill any automation or [configure your Kindle](kindle/mnt/RUNME.sh) to do so.
+
+You'll need to be in debug mode to run private commands.
+So, on the Home screen, bring up the search bar (by hitting [DEL] on devices with a keyboard, or the keyboard key on a K4, for example), and enter (or the middle button):
+
+```bash
+;debugOn
+
+# now can enable usbnet
+~usbNetwork
+```
+If succeded the battery symbol on the top right will show charging despite (not yet) connected and will not go into Mass Storage mode when connected.
+
+#### On the desktop:
 
 ```bash
 sudo ip link set up dev usb0 (It may already be up)
 sudo ip address add 192.168.15.201 peer 192.168.15.244 dev usb
 ```
 
-Use the networking until your done (`telnet 192.168.15.244`).
-Un-plug cable and toggle USBnetwork `OFF` in launcher.
-
-You'll need to be in debug mode to run private commands.
-So, on the Home screen, bring up the search bar (by hitting [DEL] on devices with a keyboard, or the keyboard key on a K4, for example), and enter:
+Connect the Kindle via USB
 
 ```bash
-;debugOn
-
-# now we can enable usbnet
-~usbNetwork
-```
-
-On the desktop:
-
-```bash
-dmesg | grep usb0
+sudo dmesg | grep usb0
 
 # example output
 > [367478.835928] cdc_subset 1-2:1.1 enp0s20u2i1: renamed from usb0
+
+# Use the devicce name from the previous output
+sudo ifconfig enp0s20u2i1 192.168.15.201
+
+# Log in to the Kindle
+ssh root@192.168.15.244
+# there is no password, just press enter
 ```
 
-Use `ifconfig enp0s20u2i1 192.168.15.201`
+### Install the scripts
 
-To log in `ssh root@192.168.15.244` and just press enter.
+#### Short method
+
+Open the raw [paste-to-install.sh](kindle/paste-to-install.sh) edit the SERVER and paste it to the kindle terminal.
+If the picture appeared on the Kindle the config is done.
+
+The SERVER (BASE=) can be edited in the `update.sh` on the Kindle root directory any time when connected with USB. 
+
+#### Manual steps
+
+```bash
+# Make the Kindle file system writable
+mntroot rw
+
+# Create the mnt/base-us scripts according to the files in the kindle directory
+nano /mnt/base-us/RUNME.sh
+
+# Set the BASE according to your local network setup to address the server
+nano /mnt/base-us/update.sh
+
+# Create a cronjob to run the update script in regular intervals
+#
+# For instance:
+# */5 6-22 * * * /mnt/us/update.sh
+# 0 23,0,5 * * * /mnt/us/update.sh
+nano /etc/crontab/root
+
+# Execute the init script and trigger an the first render
+sh /mnt/base-us/RUNME.sh
+```
 
 ## Images
 
