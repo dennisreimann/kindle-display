@@ -1,4 +1,4 @@
-BASE="http://SERVER_IP:3030"
+BASE="http://SERVER:3030"
 
 # Make the Kindle file system writable
 mntroot rw
