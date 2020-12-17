@@ -58,7 +58,16 @@ npm start
 open http://localhost:3030/display.png
 ```
 
-Once everything works, deploy the server app and setup a cronjob to trigger the `cron.sh` script regularly.
+Once everything works, deploy the server app and setup a cronjob to trigger the `cron.sh` script regularly:
+
+```bash
+SHELL=/bin/bash
+PATH=/bin:/usr/bin:/usr/local/bin
+*/5 * * * * /PATH_TO_INSTALL_DIRECTORY/kindle-display/server/cron.sh > /dev/null 2>&1
+```
+
+This example runs every five minutes and references the relevant paths.
+Adapt the cronjob to your needs.
 
 ## Kindle
 
