@@ -28,10 +28,13 @@ I recommend you **fork this repository** and modify the `./data.sh` and visual r
 ### Prerequisites
 
 - Node.js (assembles the data and runs the webserver)
-- firefox (takes the screenshot of the webpage)
+- firefox-esr (takes the screenshot of the webpage)
 - pngcrush (converts the screenshot to a greyscale image)
+- curl (to fetch the JSON data)
 - jq (to process the JSON data)
 - jo (to generate the JSON data file)
+- cron (schedule update task)
+- torsocks (optional, if you want to force Tor connections)
 
 ### Installation
 
@@ -77,17 +80,17 @@ Adapt the cronjob to your needs.
 
 1. Connect to WiFi (only compatible with 2.4GHz hotspots, not 5GHz)
 
-2. Jailbreak   
+2. Jailbreak
 You need to
 [jailbreak your Kindle](https://wiki.mobileread.com/wiki/Kindle4NTHacking#Jailbreak) using the packages from the
 [mobileread forum](https://www.mobileread.com/forums/showthread.php?t=225030).
 
-    1. Plug in the Kindle and copy the data.tar.gz & ENABLE_DIAGS files plus the diagnostic_logs folders to the Kindle's USB drive's root  
-    2. Safely remove the USB cable and restart the Kindle (Menu -> Settings -> Menu -> Restart)  
-    3. Once the device restarts into diagnostics mode, select "D) Exit, Reboot or Disable Diags" (using the 5-way keypad)  
-    4. Select "R) Reboot System" and "Q) To continue" (following on-screen instructions, when it tells you to use 'FW Left' to select an option, it means left on the 5-way keypad)  
-    5. Wait about 20 seconds: you should see the Jailbreak screen for a while, and the device should then restart normally  
-    6. After the Kindle restarts, you should see a new book titled "You are Jailbroken", if you see this, the jailbreak has been successful.   
+    1. Plug in the Kindle and copy the data.tar.gz & ENABLE_DIAGS files plus the diagnostic_logs folders to the Kindle's USB drive's root
+    2. Safely remove the USB cable and restart the Kindle (Menu -> Settings -> Menu -> Restart)
+    3. Once the device restarts into diagnostics mode, select "D) Exit, Reboot or Disable Diags" (using the 5-way keypad)
+    4. Select "R) Reboot System" and "Q) To continue" (following on-screen instructions, when it tells you to use 'FW Left' to select an option, it means left on the 5-way keypad)
+    5. Wait about 20 seconds: you should see the Jailbreak screen for a while, and the device should then restart normally
+    6. After the Kindle restarts, you should see a new book titled "You are Jailbroken", if you see this, the jailbreak has been successful.
 
 
 2. Next copy the content of the following packages to the Kindle one-by-one and open `Settings` -> `Update Your Kindle`
@@ -152,7 +155,7 @@ ssh root@192.168.15.244
 Open the raw [paste-to-install.sh](kindle/paste-to-install.sh) edit the SERVER and paste it to the kindle terminal.
 If the picture appeared on the Kindle the config is done.
 
-The SERVER (BASE=) can be edited in the `update.sh` on the Kindle root directory any time when connected with USB. 
+The SERVER (BASE=) can be edited in the `update.sh` on the Kindle root directory any time when connected with USB.
 
 #### Manual steps
 
