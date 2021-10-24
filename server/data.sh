@@ -29,22 +29,26 @@ fi
 # Fetch rates using custom BTCPay or Kraken as fallback
 if [[ "${BTCPAY_API_TOKEN}" && "${BTCPAY_HOST}" ]]; then
   rate1=$($tor curl -s -f -H "Authorization: Basic $BTCPAY_API_TOKEN" $BTCPAY_HOST/rates/BTC/$DISPLAY_RATE1 | jq -r ".data.rate")
+  moscow1=$(echo "100000000 / $rate1" | bc 2>/dev/null)
 
   if [[ ! -z "${DISPLAY_RATE2}" ]]; then
     rate2=$($tor curl -s -f -H "Authorization: Basic $BTCPAY_API_TOKEN" $BTCPAY_HOST/rates/BTC/$DISPLAY_RATE2 | jq -r ".data.rate")
+    moscow2=$(echo "100000000 / $rate2" | bc 2>/dev/null)
   fi
 fi
 
 if [[ ${DISPLAY_FALLBACK_RATES} = true && -z "${rate1}" ]]; then
   rate1=$($tor curl -s -f https://api.kraken.com/0/public/Ticker\?pair=XBT$DISPLAY_RATE1 | jq -r ".result[].c[0]")
+  moscow1=$(echo "100000000 / $rate1" | bc 2>/dev/null)
 fi
 
 if [[ ${DISPLAY_FALLBACK_RATES} = true && -z "${rate2}" && ! -z "${DISPLAY_RATE2}" ]]; then
   rate2=$($tor curl -s -f https://api.kraken.com/0/public/Ticker\?pair=XBT$DISPLAY_RATE2 | jq -r ".result[].c[0]")
+  moscow2=$(echo "100000000 / $rate2" | bc 2>/dev/null)
 fi
 
 # Bitcoin Quotes
 quote=$($tor curl -s -f https://www.bitcoin-quotes.com/quotes/random.json 2> /dev/null || echo "null")
 
 # JSON
-jo -p date="$now" blockcount="$blockcount" rate1=$(jo rate="$rate1" code="$DISPLAY_RATE1") rate2=$(jo rate="$rate2" code="$DISPLAY_RATE2") quote="$quote"  > $dir/data.json
+jo -p date="$now" blockcount="$blockcount" rate1=$(jo rate="$rate1" moscow="$moscow1" code="$DISPLAY_RATE1") rate2=$(jo rate="$rate2" moscow="$moscow2" code="$DISPLAY_RATE2") quote="$quote"  > $dir/data.json
