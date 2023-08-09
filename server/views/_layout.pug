@@ -1,3 +1,5 @@
+include _mixins
+
 doctype html
 html
   head
@@ -7,4 +9,11 @@ html
     meta(name="apple-mobile-web-app-capable" content="yes")
     meta(name="apple-mobile-web-app-status-bar-style" content="white")
   body
-    block content
+    - const displaySecondRate = rate2 && (!displayQuote || quote && quote.body.length < 115)
+    .bg
+    .info
+      h2.price.price--rate1: +displayRate(rate1)
+      h1!= blockcount || '&nbsp;'
+      h2.price.price--rate2(class=displaySecondRate ? null : 'price--hidden'): +displayRate(rate2)
+    footer
+      block content

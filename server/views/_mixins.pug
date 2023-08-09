@@ -1,0 +1,12 @@
+mixin displayRate(rate)
+  if rate
+    span.curr= currency(rate.code)
+    span.rate= Math.round(rate.rate)
+  else
+    | &nbsp;
+
+mixin displayStat(value, title)
+  if value
+    .stat
+      .value= value
+      .type= title

@@ -127,16 +127,35 @@ h2 {
   font-weight: 400;
   font-style: italic;
 }
-blockquote {
+footer {
   position: absolute;
-  bottom: 50px;
+  bottom: var(--canvas-padding);
   left: var(--canvas-padding);
   right: var(--canvas-padding);
   justify-content: center;
   line-height: 1.33;
-  font-size: .9rem;
+}
+blockquote {
+  font-size: .8rem;
 }
 .author {
+  font-size: .8rem;
   text-align: right;
   opacity: .66;
+}
+.stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1rem;
+}
+.stat .value {
+  font-weight: 700;
+  font-style: italic;
+  font-size: 1.5rem;
+}
+.stat .type {
+  opacity: .66;
+  font-size: .65rem;
 }

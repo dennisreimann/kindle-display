@@ -92,7 +92,6 @@ You need to
     5. Wait about 20 seconds: you should see the Jailbreak screen for a while, and the device should then restart normally
     6. After the Kindle restarts, you should see a new book titled "You are Jailbroken", if you see this, the jailbreak has been successful.
 
-
 2. Next copy the content of the following packages to the Kindle one-by-one and open `Settings` -> `Update Your Kindle`
 
    1. USBNetwork
@@ -123,9 +122,10 @@ So, on the Home screen, bring up the search bar (by hitting [DEL] on devices wit
 # now can enable usbnet
 ~usbNetwork
 ```
+
 If succeded the battery symbol on the top right will show charging despite (not yet) connected and will not go into Mass Storage mode when connected.
 
-#### On the desktop:
+#### On the desktop
 
 ```bash
 sudo ip link set up dev usb0 (It may already be up)
