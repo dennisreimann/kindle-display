@@ -2,8 +2,8 @@ const { readFileSync } = require('fs')
 const express = require('express')
 const app = express()
 const helpers = require('./helpers')
-const { DISPLAY_SERVER_PORT: port, DISPLAY_THEME: envTheme } = process.env
 const THEMES = ['quote', 'fees', 'lightning']
+const { DISPLAY_SERVER_PORT: port = 3030, DISPLAY_THEME: envTheme = THEMES[0] } = process.env
 
 app.set('view engine', 'pug')
 
@@ -18,7 +18,7 @@ app.get('/:theme?', (req, res) => {
       : THEMES.includes(theme) ? theme : THEMES[0]
     res.render(tmpl, { ...data, ...helpers })
   } catch (err) {
-    res.status(500).send('Could not open or parse data.json')
+    res.status(500).send(err)
   }
 })
 
