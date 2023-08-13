@@ -1,4 +1,4 @@
-if quote && quote.body.length < 220
+if quote && (quote.body.length < 220 || !rate2.rate)
   blockquote
     p= quote.body
     if quote.author && quote.author.name
