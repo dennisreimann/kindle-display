@@ -52,7 +52,8 @@ quote=$($tor curl -s -f https://www.bitcoin-quotes.com/quotes/random.json 2> /de
 
 # Mempool Stats
 fees=$($tor curl -s -f https://mempool.space/api/v1/fees/recommended 2> /dev/null || echo "null")
+mempoolblocks=$($tor curl -s -f https://mempool.space/api/v1/fees/mempool-blocks 2> /dev/null || echo "null")
 lightning=$($tor curl -s -f https://mempool.space/api/v1/lightning/statistics/latest 2> /dev/null || echo "null")
 
 # JSON
-jo -p date="$now" blockcount="$blockcount" rate1=$(jo rate="$rate1" moscow="$moscow1" code="$DISPLAY_RATE1") rate2=$(jo rate="$rate2" moscow="$moscow2" code="$DISPLAY_RATE2") quote="$quote" fees="$fees" lightning="$lightning"  > $dir/data.json
+jo -p date="$now" blockcount="$blockcount" rate1=$(jo rate="$rate1" moscow="$moscow1" code="$DISPLAY_RATE1") rate2=$(jo rate="$rate2" moscow="$moscow2" code="$DISPLAY_RATE2") quote="$quote" fees="$fees" mempoolblocks="$mempoolblocks" lightning="$lightning"  > $dir/data.json

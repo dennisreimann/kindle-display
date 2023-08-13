@@ -1,0 +1,5 @@
+.top
+  h2.value-type.price--rate1: +displayRate(rate1)
+  h1!= blockcount || '&nbsp;'
+  if rate2 && (!displayQuote || quote && quote.body.length < 115)
+    h2.value-type.price--rate2: +displayRate(rate2)

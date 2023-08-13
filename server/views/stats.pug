@@ -1,0 +1,14 @@
+extends _layout
+
+block content
+  if rate1 || rate2
+    .prices
+      if rate1
+        h2.value-type: +displayRate(rate1)
+      if rate2
+        h2.value-type: +displayRate(rate2)
+  .blockcount
+    h1!= blockcount
+  include _mempoolblocks
+  include _fees
+  include _lightning

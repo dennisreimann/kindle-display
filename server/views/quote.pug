@@ -1,8 +1,7 @@
 extends _layout
 
 block content
-  if quote && quote.body.length < 220
-    blockquote
-      p= quote.body
-      if quote.author && quote.author.name
-        p.author= `— ${quote.author.name}`
+  main
+    include _top
+  include _quote
+  .bg

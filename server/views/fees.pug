@@ -1,9 +1,7 @@
 extends _layout
 
 block content
-  if fees
-    .stats
-      +displayStat(fees.fastestFee, 'sat/vB high')
-      +displayStat(fees.halfHourFee, 'sat/vB med')
-      +displayStat(fees.hourFee, 'sat/vB low')
-      +displayStat(fees.minimumFee, 'sat/vB min')
+  main
+    include _top
+  include _fees
+  .bg

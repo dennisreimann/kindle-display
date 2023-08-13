@@ -1,0 +1,5 @@
+if quote && quote.body.length < 220
+  blockquote
+    p= quote.body
+    if quote.author && quote.author.name
+      p.author= `— ${quote.author.name}`

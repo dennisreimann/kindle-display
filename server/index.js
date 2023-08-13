@@ -2,7 +2,7 @@ const { readFileSync } = require('fs')
 const express = require('express')
 const app = express()
 const helpers = require('./helpers')
-const THEMES = ['quote', 'fees', 'lightning']
+const THEMES = ['quote', 'fees', 'lightning', 'stats']
 const { DISPLAY_SERVER_PORT: port = 3030, DISPLAY_THEME: envTheme = THEMES[0] } = process.env
 
 app.set('view engine', 'pug')

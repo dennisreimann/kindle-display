@@ -1,12 +1,27 @@
 mixin displayRate(rate)
   if rate
-    span.curr= currency(rate.code)
-    span.rate= Math.round(rate.rate)
+    span.type= currency(rate.code)
+    span.value= Math.round(rate.rate)
   else
     | &nbsp;
 
-mixin displayStat(value, title)
+mixin displayStat(value, title, diff)
   if value
-    .stat
+    .stat.value-type
       .value= value
-      .type= title
+      .type
+        = title
+        if diff
+          = ' '
+          span.diff (#{diff < 0 ? '-' : (diff === 0 ? '±' : '+')}#{Math.abs(diff)})
+
+mixin block(num, b)
+  .block
+    h3= num
+    small.value-type
+      span.value #{Math.ceil(b.feeRange[0])}-#{Math.ceil(b.feeRange[b.feeRange.length - 1])}
+      span.type sat/vB
+    h4.value-type
+      span.value ~#{Math.ceil(b.medianFee)}
+      span.type sat/vB
+    small.txs #{b.nTx} txs

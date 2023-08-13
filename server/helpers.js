@@ -14,6 +14,6 @@ module.exports = {
   sats2BTC(value) {
     const btc = value/100000000
     const formatted = btcFormat.format(btc)
-    return formatted.replace('BTC', '').trim()
+    return formatted.replace('BTC', '').replace(' ', '')
   }
 }
