@@ -1,4 +1,4 @@
-if lightning
+if lightning && lightning.latest && lightning.previous
   .stats
     +displayStat(sats2BTC(lightning.latest.total_capacity), 'BTC capacity', sats2BTC(parseInt(lightning.latest.total_capacity - lightning.previous.total_capacity)))
     +displayStat(lightning.latest.node_count, 'nodes', lightning.latest.node_count - lightning.previous.node_count)
