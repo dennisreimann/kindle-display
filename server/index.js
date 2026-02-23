@@ -1,7 +1,7 @@
 const { readFileSync } = require('fs')
 const express = require('express')
 const app = express()
-const helpers = require('./helpers')
+const helpers = require('./helpers.mjs')
 const THEMES = ['quote', 'fees', 'lightning', 'stats']
 const { DISPLAY_SERVER_PORT: port = 3030, DISPLAY_THEME: envTheme = THEMES[0] } = process.env
 
@@ -9,7 +9,7 @@ app.set('view engine', 'pug')
 
 app.use(express.static('public'))
 
-app.get('/:theme?', (req, res) => {
+app.get('/{:theme}', (req, res) => {
   try {
     const data = JSON.parse(readFileSync('data.json', 'utf8'))
     const theme = (req.params.theme || envTheme).toLowerCase()
