@@ -26,9 +26,21 @@ fi
 
 eips 0 0 "$now"
 
-# display low battery level
-if [ $batteryLevel -le 25 ]; then
-  eips 47 0 "$batteryLevel%"
+# display battery level
+if [ $batteryLevel -lt 100 ]; then
+  batteryBar=$(($batteryLevel/10))
+  case "$batteryBar" in
+    0)  eips 38 0 "|-----$batteryLevel--->|" ;;
+    1)  eips 38 0 "|----$batteryLevel-->=|" ;;
+    2)  eips 38 0 "|----$batteryLevel->==|" ;;
+    3)  eips 38 0 "|----$batteryLevel>===|" ;;
+    4)  eips 38 0 "|----$batteryLevel====|" ;;
+    5)  eips 38 0 "|----$batteryLevel====|" ;;
+    6)  eips 38 0 "|--->$batteryLevel====|" ;;
+    7)  eips 38 0 "|-->=$batteryLevel====|" ;;
+    8)  eips 38 0 "|->==$batteryLevel====|" ;;
+    9)  eips 38 0 "|>===$batteryLevel====|" ;;
+  esac
 fi
 
 if [ "$savePower" = true ]; then
