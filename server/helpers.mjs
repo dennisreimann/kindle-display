@@ -1,18 +1,7 @@
 import { mkdirSync, writeFileSync } from 'fs'
 import { dirname, join, resolve } from 'path'
-import fetch from 'node-fetch'
 
 const dir = resolve(import.meta.dirname, '.')
-
-export const load = async url => {
-  const response = await fetch(url)
-  return response.ok ? response.text() : null
-}
-
-export const loadJSON = async url => {
-  const response = await fetch(url)
-  return response.ok ? response.json() : null
-}
 
 export const write = (name, data) => {
   const dst = join(dir, name)

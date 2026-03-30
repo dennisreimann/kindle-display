@@ -12,14 +12,11 @@
   "bugs": "https://github.com/dennisreimann/kindle-display/issues",
   "main": "index.js",
   "scripts": {
-    "start": "node -r dotenv/config index.js",
-    "data": "node data.mjs"
+    "start": "node -r dotenv/config index.js"
   },
   "dependencies": {
-    "dotenv": "16.6.1",
+    "dotenv": "17.3.1",
     "express": "5.2.1",
-    "json-2-csv": "5.5.10",
-    "node-fetch": "3.3.2",
-    "pug": "3.0.3"
+    "pug": "3.0.4"
   }
 }
