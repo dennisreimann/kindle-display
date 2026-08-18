@@ -11,13 +11,13 @@ cd $dir
 ./data.sh
 
 # create screenshot
-cd $dir/public
+cd data
 
 if ! type firefox &> /dev/null && [[ -d "/Applications/Firefox.app/Contents/MacOS/" ]]; then
   PATH="$PATH:/Applications/Firefox.app/Contents/MacOS"
 fi
 
-killall firefox-esr
+killall firefox-esr 2>/dev/null || true
 rm -rf ~/.mozilla ~/.cache/mozilla
 firefox-esr --headless --screenshot http://localhost:$DISPLAY_SERVER_PORT --window-size=600,800
 pngcrush -c 0 screenshot.png display.png

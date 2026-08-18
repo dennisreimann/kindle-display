@@ -30,11 +30,16 @@ I recommend you **fork this repository** and modify the `./data.sh` and visual r
 - Node.js (assembles the data and runs the webserver)
 - firefox-esr (takes the screenshot of the webpage)
 - pngcrush (converts the screenshot to a greyscale image)
-- curl (to fetch the JSON data)
+- curl (to fetch the JSON data and, optionally, Bitcoin RPC)
 - jq (to process the JSON data)
 - jo (to generate the JSON data file)
 - cron (schedule update task)
-- torsocks (optional, if you want to force Tor connections)
+
+Optional:
+
+- A SOCKS5 proxy (e.g. Tor) — set `DISPLAY_SOCKS_PROXY` in `.env` to route all API calls through it
+- A Bitcoin RPC endpoint — set `BITCOIN_RPC_ADDR` and RPC credentials to get the block height from your own node
+- A local Mempool instance — set `MEMPOOL_API_ADDR` to use it instead of the public mempool.space for fees, mempool blocks, Lightning statistics, and exchange rates
 
 ### Installation
 

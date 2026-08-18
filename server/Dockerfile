@@ -8,7 +8,7 @@ RUN npm ci --production
 FROM node:24-slim
 WORKDIR /build
 RUN apt-get update
-RUN apt-get install -y firefox-esr pngcrush jo jq torsocks curl cron
+RUN apt-get install -y firefox-esr pngcrush jo jq curl bc cron ca-certificates
 COPY --from=builder /build .
 ADD .env.sample .env
 RUN echo "PATH=/bin:/usr/bin:/usr/local/bin\n* * * * * root /bin/bash /build/cron.sh > /build/cron.log\n#" | crontab -
