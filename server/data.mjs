@@ -79,13 +79,14 @@ const date = [
 
 // Load data based on theme
 const wantsLn = isRandomTheme || ['lightning'].includes(theme)
+const wantsOnchain = isRandomTheme || ['onchain'].includes(theme)
 const wantsQuote = isRandomTheme || ['plain'].includes(theme)
 
 const [block, prices, fees, mempoolblocks, lightning, lightningCountries, quote] = await Promise.all([
-  mempool('/api/v1/blocks/').then(blocks => (blocks?.[0] ?? null)),
+  mempool('/api/v1/blocks').then(blocks => (blocks?.[0] ?? null)),
   mempool('/api/v1/prices'),
-  mempool('/api/v1/fees/precise'),
-  mempool('/api/v1/fees/mempool-blocks'),
+  wantsOnchain ? mempool('/api/v1/fees/precise') : Promise.resolve(null),
+  wantsOnchain ? mempool('/api/v1/fees/mempool-blocks') : Promise.resolve(null),
   wantsLn ? mempool('/api/v1/lightning/statistics/latest') : Promise.resolve(null),
   wantsLn ? mempool('/api/v1/lightning/nodes/countries') : Promise.resolve(null),
   wantsQuote ? get('https://www.bitcoin-quotes.com/quotes/random.json') : Promise.resolve(null),

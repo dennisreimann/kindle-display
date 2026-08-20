@@ -22,9 +22,6 @@ The server updates this screenshot in regular intervals and the Kindle also upda
 
 ## Server
 
-The code in this repository is my personal setup which pulls in data from my own network.
-I recommend you **fork this repository** and modify the `./data.mjs` and visual representation to fit your needs.
-
 ### Prerequisites
 
 - Node.js (assembles the data and runs the webserver)
@@ -40,7 +37,7 @@ Optional:
 
 ```bash
 # Clone the repository
-git clone git@github.com:username/kindle-display.git
+git clone git@github.com:dennisreimann/kindle-display.git
 
 # Go to the server directory
 cd kindle-display/server
@@ -72,6 +69,27 @@ PATH=/bin:/usr/bin:/usr/local/bin
 This example runs every five minutes and references the relevant paths.
 Adapt the cronjob to your needs.
 
+### Docker (optional)
+
+The repository ships a [Dockerfile](server/Dockerfile) that bundles the server,
+headless Firefox and cron, rendering a new screenshot every minute.
+
+The image always starts from [.env.sample](server/.env.sample) (i.e. the public
+mempool.space) so no secrets are baked in — pass your overrides as environment
+variables at runtime.
+
+```bash
+cd server
+docker build --load -t kindle-display .
+docker run --name kindle-display -p 3030:3030 -it kindle-display
+```
+
+To use your own Mempool instance, add it via `-e`:
+
+```bash
+docker run --name kindle-display -p 3030:3030 -e MEMPOOL_BASE_URL=https://mempool.local kindle-display
+```
+
 ## Kindle
 
 ### Prerequisites
@@ -92,7 +110,7 @@ You need to
     5. Wait about 20 seconds: you should see the Jailbreak screen for a while, and the device should then restart normally
     6. After the Kindle restarts, you should see a new book titled "You are Jailbroken", if you see this, the jailbreak has been successful.
 
-2. Next copy the content of the following packages to the Kindle one-by-one and open `Settings` -> `Update Your Kindle`
+3. Next copy the content of the following packages to the Kindle one-by-one and open `Settings` -> `Update Your Kindle`
 
    1. USBNetwork
    2. MKK
@@ -111,7 +129,7 @@ Also unplug it, as some devices behave strangely when toggling usbnet/usbms whil
 #### On the Kindle
 
 Toggle USBnetwork `ON` in the launcher and plug in the cable again.
-Kill any automation or [configure your Kindle](kindle/mnt/RUNME.sh) to do so.
+Kill any automation or [configure your Kindle](kindle/mnt/base-us/RUNME.sh) to do so.
 
 You'll need to be in debug mode to run private commands.
 So, on the Home screen, bring up the search bar (by hitting [DEL] on devices with a keyboard, or the keyboard key on a K4, for example), and enter (or the middle button):
@@ -140,7 +158,7 @@ sudo dmesg | grep usb0
 # example output
 > [367478.835928] cdc_subset 1-2:1.1 enp0s20u2i1: renamed from usb0
 
-# Use the devicce name from the previous output
+# Use the device name from the previous output
 sudo ifconfig enp0s20u2i1 192.168.15.201
 
 # Log in to the Kindle

@@ -35,6 +35,7 @@ server/            Node.js web server + data pipeline (the main codebase)
   public/          Static assets (fonts, styles)
   data/            data.json + the generated display.png / screenshot.png
   .env             Runtime config (see .env.sample)
+  Dockerfile       Optional container packaging (server + cron + firefox)
 kindle/            Shell scripts deployed to the Kindle
   mnt/base-us/update.sh   Downloads display.png and renders it via eips
   mnt/base-us/RUNME.sh    Init: stops framework, disables screensaver, renders
