@@ -3,15 +3,18 @@ mixin displayRate(rate)
     span.type= currency(rate.code)
     span.value= Math.round(rate.rate)
 
-mixin displayStat(value, title, diff)
+mixin displayStat(value, title, detail)
   if value
     .stat.value-type
       .value= value
       .type
         = title
-        if diff && !isNaN(diff)
+        if detail
           = ' '
-          span.diff (#{diff < 0 ? '-' : (diff === 0 ? '±' : '+')}#{Math.abs(diff)})
+          if isNaN(detail)
+            span.detail (#{detail})
+          else
+            span.detail (#{detail < 0 ? '-' : (detail === 0 ? '±' : '+')}#{Math.abs(detail)})
 
 mixin block(b)
   if b

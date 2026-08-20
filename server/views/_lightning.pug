@@ -1,5 +1,5 @@
-if lightning && lightning.latest && lightning.previous
+if lightning && lightning.latest
   .stats
-    +displayStat(sats2BTC(lightning.latest.total_capacity), 'BTC capacity', sats2BTC(parseInt(lightning.latest.total_capacity - lightning.previous.total_capacity)))
-    +displayStat(lightning.latest.node_count, 'nodes', lightning.latest.node_count - lightning.previous.node_count)
-    +displayStat(lightning.latest.channel_count, 'channels', lightning.latest.channel_count - lightning.previous.channel_count)
+    +displayStat(sats2BTC(lightning.latest.total_capacity), 'BTC capacity', lightning.previous ? sats2BTC(parseInt(lightning.latest.total_capacity - lightning.previous.total_capacity)) : null)
+    +displayStat(lightning.latest.node_count, 'nodes', lightning.previous ? lightning.latest.node_count - lightning.previous.node_count : null)
+    +displayStat(lightning.latest.channel_count, 'channels', lightning.previous ? lightning.latest.channel_count - lightning.previous.channel_count : null)

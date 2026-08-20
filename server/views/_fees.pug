@@ -1,6 +1,6 @@
-if fees
+if fees && fees.fastestFee && fees.halfHourFee && fees.hourFee && fees.minimumFee
   .stats
-    +displayStat(fees.fastestFee, 'sat/vB high')
-    +displayStat(fees.halfHourFee, 'sat/vB med')
-    +displayStat(fees.hourFee, 'sat/vB low')
-    +displayStat(fees.minimumFee, 'sat/vB min')
+    +displayStat(fees.fastestFee.toFixed(1), 'sat/vB high')
+    +displayStat(fees.halfHourFee.toFixed(1), 'sat/vB med')
+    +displayStat(fees.hourFee.toFixed(1), 'sat/vB low')
+    +displayStat(fees.minimumFee.toFixed(1), 'sat/vB min')

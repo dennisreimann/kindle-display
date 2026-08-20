@@ -8,7 +8,7 @@ source $envFile
 
 # generate data
 cd $dir
-./data.sh
+npm run data
 
 # create screenshot
 cd data

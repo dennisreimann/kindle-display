@@ -1,0 +1,11 @@
+if lightning && lightning.latest
+  .stats
+    +displayStat(lightning.latest.clearnet_nodes, 'Clearnet')
+    +displayStat(lightning.latest.clearnet_tor_nodes, 'Clearnet+Tor')
+    +displayStat(lightning.latest.tor_nodes, 'Tor')
+    +displayStat(lightning.latest.unannounced_nodes, 'Unknown')
+if lightningCountries
+  .stats
+    each c, i in lightningCountries
+      if i < 4
+       +displayStat(c.count, c.iso, `${c.share}%`)

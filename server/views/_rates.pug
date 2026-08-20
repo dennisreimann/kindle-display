@@ -1,0 +1,5 @@
+if rates && rates.length
+  .rates
+    each r in rates
+      if r.rate
+        h3.value-type: +displayRate(r)

@@ -1,5 +1,3 @@
 server/.env
 server/data.json
 server/node_modules
-server/public/display.png
-server/public/screenshot.png

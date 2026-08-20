@@ -26,13 +26,14 @@ Two-part system:
 ```
 server/            Node.js web server + data pipeline (the main codebase)
   index.js         Express app; renders the current theme from data/data.json
-  data.sh          Bash pipeline: fetches blockcount, rates, quotes, fees,
-                   lightning, mempool blocks and writes data/data.json via jo
-  cron.sh          Entrypoint for cron: runs data.sh, then screenshots the page
+  data.mjs         Node data pipeline: fetches the latest block, rates, quotes,
+                   fees, lightning, mempool blocks and writes data/data.json
+  cron.sh          Entrypoint for cron: runs data.mjs, then screenshots the page
                    with headless firefox-esr and converts with pngcrush
   helpers.mjs      ESM helpers (writeJSON, currency, sats2BTC) shared w/ views
-  views/*.pug      Pug templates; one per theme (plain, fees, lightning, stats)
-  public/          Static assets + the generated display.png / screenshot.png
+  views/*.pug      Pug templates; one per theme (plain, onchain, lightning)
+  public/          Static assets (fonts, styles)
+  data/            data.json + the generated display.png / screenshot.png
   .env             Runtime config (see .env.sample)
 kindle/            Shell scripts deployed to the Kindle
   mnt/base-us/update.sh   Downloads display.png and renders it via eips
@@ -45,13 +46,13 @@ README.md          Full jailbreak + setup walkthrough
 
 - `server/index.js` is a single-route Express app (`GET /{:theme}`). It reads
   `data/data.json`, resolves the theme (`plain` default; `random` picks one of
-  `plain`/`fees`/`lightning`/`stats`), and renders the template with `helpers`.
-- `server/data.sh` is the data pipeline. It sources `.env`, routes external API
-  calls through an optional SOCKS5 proxy (`DISPLAY_SOCKS_PROXY`), and prefers a
-  local Bitcoin RPC and/or local Mempool instance when configured. Falls back to
-  public endpoints (blockchain.info, mempool.space) otherwise.
+  `plain`/`onchain`/`lightning`), and renders the template with `helpers`.
+- `server/data.mjs` is the data pipeline. It loads `.env` and prefers a
+  local Mempool instance when configured (`MEMPOOL_BASE_URL`), falling back to
+  the public mempool.space otherwise. The block height comes from the Mempool
+  API (`GET /api/v1/blocks/`); the newest block is stored in full.
 - `server/cron.sh` is meant to be scheduled (e.g. every 5 minutes). It runs
-  `data.sh`, then captures `http://localhost:$DISPLAY_SERVER_PORT` with headless
+  `data.mjs`, then captures `http://localhost:$DISPLAY_SERVER_PORT` with headless
   Firefox at 600x800 and converts the PNG to greyscale with `pngcrush`.
 
 ## Commands
@@ -74,11 +75,7 @@ Key variables (see `server/.env.sample` for all with comments):
 | Variable | Purpose |
 |----------|---------|
 | `DISPLAY_SERVER_PORT` | HTTP port (default `3030`) |
-| `DISPLAY_THEME` | Default theme: `plain`, `fees`, `lightning`, `stats`, `random` |
-| `DISPLAY_SOCKS_PROXY` | SOCKS5 proxy (e.g. Tor) for external API calls |
-| `DISPLAY_FORCE_TOR` | If `true`, fail when `DISPLAY_SOCKS_PROXY` unset |
-| `BITCOIN_RPC_ADDR` / `DISPLAY_BITCOIN_RPC_USER` / `DISPLAY_BITCOIN_RPC_PASS` | Own Bitcoin node for block height |
-| `DISPLAY_FALLBACK_BLOCK` | Fall back to blockchain.info when no RPC |
+| `DISPLAY_THEME` | Default theme: `plain`, `onchain`, `lightning`, `random` |
 | `MEMPOOL_BASE_URL` | Use a local Mempool instance instead of mempool.space |
 | `DISPLAY_RATE1` / `DISPLAY_RATE2` | Fiat currencies to show (USD, EUR, GBP, CHF, CAD, AUD, JPY) |
 
@@ -88,12 +85,13 @@ Key variables (see `server/.env.sample` for all with comments):
   templates, dotenv for config. CJS (`index.js`) and ESM (`helpers.mjs`) coexist,
   so `index.js` requires `helpers.mjs` via `require('./helpers.mjs')` — keep
   matching the existing mix where adding files.
-- **Data:** `data.sh` uses only shell tools (`curl`, `jq`, `jo`, `bc`). External
-  calls go through the proxy; local services (RPC, local Mempool) never do.
+- **Data:** `data.mjs` is ESM and uses the global `fetch` to pull the JSON
+  from the Mempool and Bitcoin Quotes APIs and writes `data/data.json`.
 - **Shell:** server scripts use bash (`#!/bin/bash`); Kindle scripts are POSIX sh
   (`#!/bin/sh`) because they run on the e-reader.
-- All paths referenced in `index.js` (`data/data.json`, `public`, `data`) are
-  relative to the `server/` working directory — run node from `server/`.
+- All paths referenced in `index.js` (`data/data.json`, `public`, `data/display.png`,
+  `data/screenshot.png`) are relative to the `server/` working directory (or
+  `__dirname`) — run node from `server/`.
 
 ## Credits
 

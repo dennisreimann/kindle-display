@@ -23,23 +23,18 @@ The server updates this screenshot in regular intervals and the Kindle also upda
 ## Server
 
 The code in this repository is my personal setup which pulls in data from my own network.
-I recommend you **fork this repository** and modify the `./data.sh` and visual representation to fit your needs.
+I recommend you **fork this repository** and modify the `./data.mjs` and visual representation to fit your needs.
 
 ### Prerequisites
 
 - Node.js (assembles the data and runs the webserver)
 - firefox-esr (takes the screenshot of the webpage)
 - pngcrush (converts the screenshot to a greyscale image)
-- curl (to fetch the JSON data and, optionally, Bitcoin RPC)
-- jq (to process the JSON data)
-- jo (to generate the JSON data file)
 - cron (schedule update task)
 
 Optional:
 
-- A SOCKS5 proxy (e.g. Tor) — set `DISPLAY_SOCKS_PROXY` in `.env` to route all API calls through it
-- A Bitcoin RPC endpoint — set `BITCOIN_RPC_ADDR` and RPC credentials to get the block height from your own node
-- A local Mempool instance — set `MEMPOOL_API_ADDR` to use it instead of the public mempool.space for fees, mempool blocks, Lightning statistics, and exchange rates
+- A local Mempool instance — set `MEMPOOL_BASE_URL` to use it instead of the public mempool.space for the block height, fees, mempool blocks, Lightning statistics, and exchange rates
 
 ### Installation
 
