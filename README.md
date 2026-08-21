@@ -25,7 +25,7 @@ The server updates this screenshot in regular intervals and the Kindle also upda
 ### Prerequisites
 
 - Node.js (assembles the data and runs the webserver)
-- firefox-esr (takes the screenshot of the webpage)
+- Firefox (takes the screenshot of the webpage)
 - pngcrush (converts the screenshot to a greyscale image)
 - cron (schedule update task)
 

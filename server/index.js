@@ -3,6 +3,8 @@ const { join } = require('path')
 const express = require('express')
 const app = express()
 const helpers = require('./helpers.mjs')
+
+require('dotenv').config({ quiet: true })
 const { DISPLAY_SERVER_PORT: port = 3030, DISPLAY_THEME: envTheme } = process.env
 
 app.set('view engine', 'pug')

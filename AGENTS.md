@@ -29,13 +29,13 @@ server/            Node.js web server + data pipeline (the main codebase)
   data.mjs         Node data pipeline: fetches the latest block, rates, quotes,
                    fees, lightning, mempool blocks and writes data/data.json
   cron.sh          Entrypoint for cron: runs data.mjs, then screenshots the page
-                   with headless firefox-esr and converts with pngcrush
+                   with headless firefox and converts with pngcrush
   helpers.mjs      ESM helpers (writeJSON, currency, sats2BTC) shared w/ views
   views/*.pug      Pug templates; one per theme (plain, onchain, lightning)
   public/          Static assets (fonts, styles)
   data/            data.json + the generated display.png / screenshot.png
   .env             Runtime config (see .env.sample)
-  Dockerfile       Optional container packaging (server + cron + firefox)
+  Dockerfile       Optional container packaging (server + cron + firefox-esr)
 kindle/            Shell scripts deployed to the Kindle
   mnt/base-us/update.sh   Downloads display.png and renders it via eips
   mnt/base-us/RUNME.sh    Init: stops framework, disables screensaver, renders
@@ -62,7 +62,7 @@ README.md          Full jailbreak + setup walkthrough
 cd server
 npm install
 cp .env.sample .env     # adapt settings
-npm start               # node -r dotenv/config index.js  (port 3030)
+npm start               # node index.js  (port 3030)
 ./cron.sh               # refresh data + regenerate display.png
 ```
 

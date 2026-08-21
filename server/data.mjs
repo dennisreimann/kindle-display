@@ -8,7 +8,7 @@ import { request as httpRequest } from 'http'
 import { getTheme, writeJSON } from './helpers.mjs'
 
 const dir = dirname(fileURLToPath(import.meta.url))
-dotenv.config({ path: join(dir, '.env') })
+dotenv.config({ path: join(dir, '.env'), quiet: true })
 
 const { MEMPOOL_BASE_URL, DISPLAY_THEME, DISPLAY_RATE1, DISPLAY_RATE2 } = process.env
 const isRandomTheme = DISPLAY_THEME === 'random'
