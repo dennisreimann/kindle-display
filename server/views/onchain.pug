@@ -2,27 +2,6 @@ extends _layout
 
 block content
   include _rates
-  if block
-    - var pool = block.extras.pool
-    - var feeRange = block.extras.feeRange
-    .current-block
-      h1.blockheight= block.height
-      h6.details
-        span.txs #{block.tx_count} txs
-        if pool
-          span= pool.name
-        span 0…#{block.id.substr(block.id.length - 6)}
-      h6.details
-        - var min = feeRange[0]
-        - var max = feeRange[feeRange.length - 1]
-        - var low = min >= 1 ? Math.round(min) : min.toFixed(1)
-        - var high = max >= 1 ? Math.round(max) : max.toFixed(1)
-        - var median = block.extras.medianFee >= 1 ? Math.round(block.extras.medianFee) : block.extras.medianFee.toFixed(1)
-        .value-type
-          span.value ~#{median}
-          span.type sat/vB
-        .value-type
-          span.value= low === high ? low : low + ' - ' + high
-          span.type sat/vB
+  include _currentblock
   include _mempoolblocks
   include _fees

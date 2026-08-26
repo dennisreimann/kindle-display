@@ -31,7 +31,7 @@ server/            Node.js web server + data pipeline (the main codebase)
   cron.sh          Entrypoint for cron: runs data.mjs, then screenshots the page
                    with headless firefox and converts with pngcrush
   helpers.mjs      ESM helpers (writeJSON, currency, sats2BTC) shared w/ views
-  views/*.pug      Pug templates; one per theme (plain, onchain, lightning)
+  views/*.pug      Pug templates; one per theme (plain, onchain, lightning, mining)
   public/          Static assets (fonts, styles)
   data/            data.json + the generated display.png / screenshot.png
   .env             Runtime config (see .env.sample)
@@ -47,7 +47,7 @@ README.md          Full jailbreak + setup walkthrough
 
 - `server/index.js` is a single-route Express app (`GET /{:theme}`). It reads
   `data/data.json`, resolves the theme (`plain` default; `random` picks one of
-  `plain`/`onchain`/`lightning`), and renders the template with `helpers`.
+  `plain`/`onchain`/`lightning`/`mining`), and renders the template with `helpers`.
 - `server/data.mjs` is the data pipeline. It loads `.env` and prefers a
   local Mempool instance when configured (`MEMPOOL_BASE_URL`), falling back to
   the public mempool.space otherwise. The block height comes from the Mempool
@@ -76,7 +76,7 @@ Key variables (see `server/.env.sample` for all with comments):
 | Variable | Purpose |
 |----------|---------|
 | `DISPLAY_SERVER_PORT` | HTTP port (default `3030`) |
-| `DISPLAY_THEME` | Default theme: `plain`, `onchain`, `lightning`, `random` |
+| `DISPLAY_THEME` | Default theme: `plain`, `onchain`, `lightning`, `mining`, `random` |
 | `MEMPOOL_BASE_URL` | Use a local Mempool instance instead of mempool.space |
 | `DISPLAY_RATE1` / `DISPLAY_RATE2` | Fiat currencies to show (USD, EUR, GBP, CHF, CAD, AUD, JPY) |
 

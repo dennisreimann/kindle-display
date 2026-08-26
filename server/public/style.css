@@ -247,22 +247,22 @@ h3 {
   font-size: var(--font-size-s);
   font-weight: 400;
 }
-.countries {
+ol {
   width: 100%;
   font-size: 1.125rem;
   line-height: 1.75;
 }
-.countries li {
+ol li {
   display: flex;
   align-items: center;
   gap: .5rem;
   font-size: var(--font-size-s);
 }
-.countries li .value {
+ol li .value {
   margin-left: auto;
   font-weight: 600;
 }
-.countries li .share {
+ol li .share {
   color: rgb(var(--color-secondary-rgb));
   min-width: 3.5em;
   text-align: right;

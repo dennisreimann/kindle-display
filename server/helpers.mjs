@@ -3,7 +3,7 @@ import { dirname, join, resolve } from 'path'
 
 const dir = resolve(import.meta.dirname, '.')
 
-export const THEMES = ['plain', 'onchain', 'lightning']
+export const THEMES = ['plain', 'onchain', 'lightning', 'mining']
 
 export const write = (name, data) => {
   const dst = join(dir, name)

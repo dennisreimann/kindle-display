@@ -68,7 +68,7 @@ const get = (url, insecure = false) => new Promise(resolve => {
   req.on('error', () => resolve(null))
   req.end()
 })
-const mempool = path => get(`${mempoolBase}${path}`, insecure)
+const mempool = path => get(`${mempoolBase}/api/v1/${path}`, insecure)
 
 const now = new Date()
 const date = [
@@ -80,15 +80,19 @@ const date = [
 // Load data based on theme
 const wantsLn = isRandomTheme || ['lightning'].includes(theme)
 const wantsOnchain = isRandomTheme || ['onchain'].includes(theme)
+const wantsMining = isRandomTheme || ['mining'].includes(theme)
 const wantsQuote = isRandomTheme || ['plain'].includes(theme)
 
-const [block, prices, fees, mempoolblocks, lightning, lightningCountries, quote] = await Promise.all([
-  mempool('/api/v1/blocks').then(blocks => (blocks?.[0] ?? null)),
-  mempool('/api/v1/prices'),
-  wantsOnchain ? mempool('/api/v1/fees/precise') : Promise.resolve(null),
-  wantsOnchain ? mempool('/api/v1/fees/mempool-blocks') : Promise.resolve(null),
-  wantsLn ? mempool('/api/v1/lightning/statistics/latest') : Promise.resolve(null),
-  wantsLn ? mempool('/api/v1/lightning/nodes/countries') : Promise.resolve(null),
+const [block, prices, fees, mempoolblocks, mempoolbacklog, pools, difficultyAdjustment, lightning, lightningCountries, quote] = await Promise.all([
+  mempool('blocks').then(blocks => (blocks?.[0] ?? null)),
+  mempool('prices'),
+  wantsOnchain ? mempool('fees/precise') : Promise.resolve(null),
+  wantsOnchain ? mempool('fees/mempool-blocks') : Promise.resolve(null),
+  wantsMining ? mempool('mempool') : Promise.resolve(null),
+  wantsMining ? mempool('mining/pools/1w') : Promise.resolve(null),
+  wantsMining ? mempool('difficulty-adjustment') : Promise.resolve(null),
+  wantsLn ? mempool('lightning/statistics/latest') : Promise.resolve(null),
+  wantsLn ? mempool('lightning/nodes/countries') : Promise.resolve(null),
   wantsQuote ? get('https://www.bitcoin-quotes.com/quotes/random.json') : Promise.resolve(null),
 ])
 
@@ -105,9 +109,12 @@ const data = {
   rates,
   quote,
   fees,
+  mempoolbacklog,
   mempoolblocks,
+  difficultyAdjustment,
   lightning,
-  lightningCountries
+  lightningCountries: lightningCountries.slice(0, 3),
+  pools: pools.pools.slice(0, 5)
 }
 
 writeJSON('data/data', data)

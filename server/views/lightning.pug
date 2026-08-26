@@ -1,8 +1,30 @@
 extends _layout
 
+mixin flag(code)
+  - const c = code.toUpperCase()
+  - const cp = [...c].map(char => 127397 + char.charCodeAt(0))
+  - const emoji = String.fromCodePoint(...cp)
+  span= emoji
+
 block content
   include _rates
   include _blockheight
   include _lightning
-  include _lightning_details
+  if lightning && lightning.latest
+    .stats.stats--secondary
+      +displayStat(lightning.latest.clearnet_nodes, 'Clearnet')
+      +displayStat(lightning.latest.clearnet_tor_nodes, 'Clearnet+Tor')
+      +displayStat(lightning.latest.tor_nodes, 'Tor')
+      +displayStat(lightning.latest.unannounced_nodes, 'Unknown')
+  if lightningCountries
+    ol.countries
+      each c, i in lightningCountries
+        li
+          span.rank #{i + 1}.
+          span
+            +flag(c.iso)
+            = " "
+            = c.name.en
+          span.value #{c.count} nodes
+          span.share #{c.share}%
   .bg.bg--ln

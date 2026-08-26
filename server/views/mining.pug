@@ -1,0 +1,19 @@
+extends _layout
+
+block content
+  include _rates
+  include _currentblock
+  if mempoolbacklog || difficultyAdjustment
+    .stats.stats--secondary
+      if mempoolbacklog
+        +displayStat(mempoolbacklog.count, 'TX unconfirmed')
+      if difficultyAdjustment
+        +displayStat(difficultyAdjustment.remainingBlocks, 'Blocks until diff. adj.')
+        +displayStat(`${Math.round(difficultyAdjustment.difficultyChange * 100) / 100}%`, 'Est. change')
+  if pools
+    ol.pools
+      each c, i in pools
+        li
+          span.rank #{i + 1}.
+          span= c.name
+          span.value #{c.blockCount} blocks
