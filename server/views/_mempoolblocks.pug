@@ -1,3 +1,19 @@
+mixin block(b)
+  if b
+    .block
+      - var min = b.feeRange[0]
+      - var max = b.feeRange[b.feeRange.length - 1]
+      - var low = min >= 1 ? Math.round(min) : min.toFixed(1)
+      - var high = max >= 1 ? Math.round(max) : max.toFixed(1)
+      - var median = b.medianFee >= 1 ? Math.round(b.medianFee) : b.medianFee.toFixed(1)
+      small.value-type
+        span.value= low === high ? low : low + ' - ' + high
+        span.type sat/vB
+      h4.value-type
+        span.value ~#{median}
+        span.type sat/vB
+      small.txs #{b.nTx} txs
+
 .blocks
   if mempoolblocks
     +block(mempoolblocks[2])

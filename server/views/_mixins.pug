@@ -15,14 +15,3 @@ mixin displayStat(value, title, detail)
             span.detail (#{detail})
           else
             span.detail (#{detail < 0 ? '-' : (detail === 0 ? '±' : '+')}#{Math.abs(detail)})
-
-mixin block(b)
-  if b
-    .block
-      small.value-type
-        span.value #{Math.ceil(b.feeRange[0])}-#{Math.ceil(b.feeRange[b.feeRange.length - 1])}
-        span.type sat/vB
-      h4.value-type
-        span.value ~#{Math.ceil(b.medianFee)}
-        span.type sat/vB
-      small.txs #{b.nTx} txs

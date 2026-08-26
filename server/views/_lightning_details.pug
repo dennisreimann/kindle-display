@@ -1,11 +1,24 @@
+mixin flag(code)
+  - const c = code.toUpperCase()
+  - const cp = [...c].map(char => 127397 + char.charCodeAt(0))
+  - const emoji = String.fromCodePoint(...cp)
+  span= emoji
+
 if lightning && lightning.latest
-  .stats
+  .stats.stats--secondary
     +displayStat(lightning.latest.clearnet_nodes, 'Clearnet')
     +displayStat(lightning.latest.clearnet_tor_nodes, 'Clearnet+Tor')
     +displayStat(lightning.latest.tor_nodes, 'Tor')
     +displayStat(lightning.latest.unannounced_nodes, 'Unknown')
 if lightningCountries
-  .stats
+  ol.countries
     each c, i in lightningCountries
-      if i < 4
-       +displayStat(c.count, c.iso, `${c.share}%`)
+      if i < 3
+        li
+          span.rank #{i + 1}.
+          span
+            +flag(c.iso)
+            = " "
+            = c.name.en
+          span.value #{c.count} nodes
+          span.share #{c.share}%
