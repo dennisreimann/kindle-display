@@ -20,6 +20,15 @@ The server updates this screenshot in regular intervals and the Kindle also upda
  kindle                         server
 ```
 
+### Samples
+
+|Plain|Onchain|
+|---|---|
+| ![Plain](./samples/plain.png) | ![Onchain](./samples/onchain.png) |
+|Lightning|Mining|
+| ![Lightning](./samples/lightning.png) | ![Mining](./samples/mining.png) |
+
+
 ## Server
 
 ### Prerequisites
