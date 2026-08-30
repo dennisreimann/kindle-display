@@ -113,8 +113,8 @@ const data = {
   mempoolblocks,
   difficultyAdjustment,
   lightning,
-  lightningCountries: lightningCountries.slice(0, 3),
-  pools: pools.pools.slice(0, 5)
+  lightningCountries: lightningCountries?.slice(0, 3),
+  pools: pools?.pools.slice(0, 5)
 }
 
 writeJSON('data/data', data)
