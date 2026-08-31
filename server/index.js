@@ -5,7 +5,8 @@ const app = express()
 const helpers = require('./helpers.mjs')
 
 require('dotenv').config({ quiet: true })
-const { DISPLAY_SERVER_PORT: port = 3030, DISPLAY_THEME: envTheme } = process.env
+const { DISPLAY_SERVER_PORT: port = 3030, DISPLAY_THEME: envTheme } =
+  process.env
 
 app.set('view engine', 'pug')
 
@@ -14,7 +15,8 @@ app.use(express.static('public'))
 // Serve the generated greyscale PNGs from data/ (the Kindle polls display.png).
 // They are mounted before the theme route and only these two files are exposed —
 // the rest of data/ (incl. data.json) stays private.
-const sendPng = file => (req, res) => res.sendFile(join(__dirname, 'data', file))
+const sendPng = (file) => (req, res) =>
+  res.sendFile(join(__dirname, 'data', file))
 app.get('/display.png', sendPng('display.png'))
 app.get('/screenshot.png', sendPng('screenshot.png'))
 

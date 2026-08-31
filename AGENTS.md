@@ -73,12 +73,12 @@ There is no test suite and no lint/build tooling — verification is manual (vie
 
 Key variables (see `server/.env.sample` for all with comments):
 
-| Variable | Purpose |
-|----------|---------|
-| `DISPLAY_SERVER_PORT` | HTTP port (default `3030`) |
-| `DISPLAY_THEME` | Default theme: `plain`, `onchain`, `lightning`, `mining`, `random` |
-| `MEMPOOL_BASE_URL` | Use a local Mempool instance instead of mempool.space |
-| `DISPLAY_RATE1` / `DISPLAY_RATE2` | Fiat currencies to show (USD, EUR, GBP, CHF, CAD, AUD, JPY) |
+| Variable                          | Purpose                                                            |
+| --------------------------------- | ------------------------------------------------------------------ |
+| `DISPLAY_SERVER_PORT`             | HTTP port (default `3030`)                                         |
+| `DISPLAY_THEME`                   | Default theme: `plain`, `onchain`, `lightning`, `mining`, `random` |
+| `MEMPOOL_BASE_URL`                | Use a local Mempool instance instead of mempool.space              |
+| `DISPLAY_RATE1` / `DISPLAY_RATE2` | Fiat currencies to show (USD, EUR, GBP, CHF, CAD, AUD, JPY)        |
 
 ## Conventions
 
@@ -101,6 +101,7 @@ Key variables (see `server/.env.sample` for all with comments):
 - [The Hacker's SB Developer's Guide](http://www.mobileread.com/forums/showthread.php?t=267541)
 
 <!-- CODEGRAPH_START -->
+
 ## CodeGraph
 
 In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the repo root), reach for it BEFORE grep/find or reading files when you need to understand or locate code:

@@ -22,12 +22,11 @@ The server updates this screenshot in regular intervals and the Kindle also upda
 
 ### Samples
 
-|Plain|Onchain|
-|---|---|
-| ![Plain](./samples/plain.png) | ![Onchain](./samples/onchain.png) |
-|Lightning|Mining|
-| ![Lightning](./samples/lightning.png) | ![Mining](./samples/mining.png) |
-
+| Plain                                 | Onchain                           |
+| ------------------------------------- | --------------------------------- |
+| ![Plain](./samples/plain.png)         | ![Onchain](./samples/onchain.png) |
+| Lightning                             | Mining                            |
+| ![Lightning](./samples/lightning.png) | ![Mining](./samples/mining.png)   |
 
 ## Server
 
@@ -108,16 +107,16 @@ docker run --name kindle-display -p 3030:3030 -e MEMPOOL_BASE_URL=https://mempoo
 1. Connect to WiFi (only compatible with 2.4GHz hotspots, not 5GHz)
 
 2. Jailbreak
-You need to
-[jailbreak your Kindle](https://wiki.mobileread.com/wiki/Kindle4NTHacking#Jailbreak) using the packages from the
-[mobileread forum](https://www.mobileread.com/forums/showthread.php?t=225030).
+   You need to
+   [jailbreak your Kindle](https://wiki.mobileread.com/wiki/Kindle4NTHacking#Jailbreak) using the packages from the
+   [mobileread forum](https://www.mobileread.com/forums/showthread.php?t=225030).
 
-    1. Plug in the Kindle and copy the data.tar.gz & ENABLE_DIAGS files plus the diagnostic_logs folders to the Kindle's USB drive's root
-    2. Safely remove the USB cable and restart the Kindle (Menu -> Settings -> Menu -> Restart)
-    3. Once the device restarts into diagnostics mode, select "D) Exit, Reboot or Disable Diags" (using the 5-way keypad)
-    4. Select "R) Reboot System" and "Q) To continue" (following on-screen instructions, when it tells you to use 'FW Left' to select an option, it means left on the 5-way keypad)
-    5. Wait about 20 seconds: you should see the Jailbreak screen for a while, and the device should then restart normally
-    6. After the Kindle restarts, you should see a new book titled "You are Jailbroken", if you see this, the jailbreak has been successful.
+   1. Plug in the Kindle and copy the data.tar.gz & ENABLE_DIAGS files plus the diagnostic_logs folders to the Kindle's USB drive's root
+   2. Safely remove the USB cable and restart the Kindle (Menu -> Settings -> Menu -> Restart)
+   3. Once the device restarts into diagnostics mode, select "D) Exit, Reboot or Disable Diags" (using the 5-way keypad)
+   4. Select "R) Reboot System" and "Q) To continue" (following on-screen instructions, when it tells you to use 'FW Left' to select an option, it means left on the 5-way keypad)
+   5. Wait about 20 seconds: you should see the Jailbreak screen for a while, and the device should then restart normally
+   6. After the Kindle restarts, you should see a new book titled "You are Jailbroken", if you see this, the jailbreak has been successful.
 
 3. Next copy the content of the following packages to the Kindle one-by-one and open `Settings` -> `Update Your Kindle`
 

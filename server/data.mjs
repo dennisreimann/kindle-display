@@ -10,7 +10,8 @@ import { getTheme, writeJSON } from './helpers.mjs'
 const dir = dirname(fileURLToPath(import.meta.url))
 dotenv.config({ path: join(dir, '.env'), quiet: true })
 
-const { MEMPOOL_BASE_URL, DISPLAY_THEME, DISPLAY_RATE1, DISPLAY_RATE2 } = process.env
+const { MEMPOOL_BASE_URL, DISPLAY_THEME, DISPLAY_RATE1, DISPLAY_RATE2 } =
+  process.env
 const isRandomTheme = DISPLAY_THEME === 'random'
 const theme = getTheme(DISPLAY_THEME)
 
@@ -21,10 +22,11 @@ const theme = getTheme(DISPLAY_THEME)
 const mempoolDefault = 'https://mempool.space'
 const mempoolBase = MEMPOOL_BASE_URL || mempoolDefault
 
-const isLocalUrl = url => {
+const isLocalUrl = (url) => {
   try {
     const host = new URL(url).hostname.toLowerCase()
-    return host === 'localhost' ||
+    return (
+      host === 'localhost' ||
       host.endsWith('.local') ||
       host.endsWith('.localhost') ||
       host.startsWith('127.') ||
@@ -32,6 +34,7 @@ const isLocalUrl = url => {
       host.startsWith('192.168.') ||
       /^172\.(1[6-9]|2\d|3[01])\./.test(host) ||
       host.startsWith('169.254.')
+    )
   } catch {
     return false
   }
@@ -41,41 +44,51 @@ const insecure = isLocalUrl(mempoolBase)
 const MAX_BYTES = 5 * 1024 * 1024 // safety cap on response size
 const TIMEOUT_MS = 15000
 
-const get = (url, insecure = false) => new Promise(resolve => {
-  const mod = url.startsWith('https:') ? httpsRequest : httpRequest
-  const req = mod(url, { rejectUnauthorized: !insecure }, res => {
-    const chunks = []
-    let size = 0
-    res.on('data', chunk => {
-      size += chunk.length
-      if (size > MAX_BYTES) {
-        resolve(null)
-        return res.destroy()
-      }
-      chunks.push(chunk)
+const get = (url, insecure = false) =>
+  new Promise((resolve) => {
+    const mod = url.startsWith('https:') ? httpsRequest : httpRequest
+    const req = mod(url, { rejectUnauthorized: !insecure }, (res) => {
+      const chunks = []
+      let size = 0
+      res.on('data', (chunk) => {
+        size += chunk.length
+        if (size > MAX_BYTES) {
+          resolve(null)
+          return res.destroy()
+        }
+        chunks.push(chunk)
+      })
+      res.on('error', () => resolve(null))
+      res.on('end', () => {
+        if (res.statusCode < 200 || res.statusCode >= 300) return resolve(null)
+        try {
+          resolve(JSON.parse(Buffer.concat(chunks).toString()))
+        } catch {
+          resolve(null)
+        }
+      })
     })
-    res.on('error', () => resolve(null))
-    res.on('end', () => {
-      if (res.statusCode < 200 || res.statusCode >= 300) return resolve(null)
-      try { resolve(JSON.parse(Buffer.concat(chunks).toString())) }
-      catch { resolve(null) }
+    req.setTimeout(TIMEOUT_MS, () => {
+      resolve(null)
+      req.destroy()
     })
+    req.on('error', () => resolve(null))
+    req.end()
   })
-  req.setTimeout(TIMEOUT_MS, () => {
-    resolve(null)
-    req.destroy()
-  })
-  req.on('error', () => resolve(null))
-  req.end()
-})
-const mempool = path => get(`${mempoolBase}/api/v1/${path}`, insecure)
+const mempool = (path) => get(`${mempoolBase}/api/v1/${path}`, insecure)
 
 const now = new Date()
-const date = [
-  now.getFullYear(),
-  String(now.getMonth() + 1).padStart(2, '0'),
-  String(now.getDate()).padStart(2, '0'),
-].join('-') + ' ' + [String(now.getHours()).padStart(2, '0'), String(now.getMinutes()).padStart(2, '0')].join(':')
+const date =
+  [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0'),
+  ].join('-') +
+  ' ' +
+  [
+    String(now.getHours()).padStart(2, '0'),
+    String(now.getMinutes()).padStart(2, '0'),
+  ].join(':')
 
 // Load data based on theme
 const wantsLn = isRandomTheme || ['lightning'].includes(theme)
@@ -83,8 +96,19 @@ const wantsOnchain = isRandomTheme || ['onchain'].includes(theme)
 const wantsMining = isRandomTheme || ['mining'].includes(theme)
 const wantsQuote = isRandomTheme || ['plain'].includes(theme)
 
-const [block, prices, fees, mempoolblocks, mempoolbacklog, pools, difficultyAdjustment, lightning, lightningCountries, quote] = await Promise.all([
-  mempool('blocks').then(blocks => (blocks?.[0] ?? null)),
+const [
+  block,
+  prices,
+  fees,
+  mempoolblocks,
+  mempoolbacklog,
+  pools,
+  difficultyAdjustment,
+  lightning,
+  lightningCountries,
+  quote,
+] = await Promise.all([
+  mempool('blocks').then((blocks) => blocks?.[0] ?? null),
   mempool('prices'),
   wantsOnchain ? mempool('fees/precise') : Promise.resolve(null),
   wantsOnchain ? mempool('fees/mempool-blocks') : Promise.resolve(null),
@@ -93,10 +117,12 @@ const [block, prices, fees, mempoolblocks, mempoolbacklog, pools, difficultyAdju
   wantsMining ? mempool('difficulty-adjustment') : Promise.resolve(null),
   wantsLn ? mempool('lightning/statistics/latest') : Promise.resolve(null),
   wantsLn ? mempool('lightning/nodes/countries') : Promise.resolve(null),
-  wantsQuote ? get('https://www.bitcoin-quotes.com/quotes/random.json') : Promise.resolve(null),
+  wantsQuote
+    ? get('https://www.bitcoin-quotes.com/quotes/random.json')
+    : Promise.resolve(null),
 ])
 
-const rateOf = code => {
+const rateOf = (code) => {
   const value = prices?.[code]
   return { code, ...(value ? { rate: value } : {}) }
 }
@@ -114,7 +140,7 @@ const data = {
   difficultyAdjustment,
   lightning,
   lightningCountries: lightningCountries?.slice(0, 3),
-  pools: pools?.pools.slice(0, 5)
+  pools: pools?.pools.slice(0, 5),
 }
 
 writeJSON('data/data', data)
