@@ -10,8 +10,15 @@ import { getTheme, writeJSON } from './helpers.mjs'
 const dir = dirname(fileURLToPath(import.meta.url))
 dotenv.config({ path: join(dir, '.env'), quiet: true })
 
-const { MEMPOOL_BASE_URL, DISPLAY_THEME, DISPLAY_RATE1, DISPLAY_RATE2 } =
-  process.env
+const {
+  MEMPOOL_BASE_URL,
+  DISPLAY_MEMPOOL_FEES_URL,
+  DISPLAY_MEMPOOL_BLOCKS_URL,
+  DISPLAY_MEMPOOL_LIGHTNING_URL,
+  DISPLAY_THEME,
+  DISPLAY_RATE1,
+  DISPLAY_RATE2,
+} = process.env
 const isRandomTheme = DISPLAY_THEME === 'random'
 const theme = getTheme(DISPLAY_THEME)
 
@@ -39,8 +46,6 @@ const isLocalUrl = (url) => {
     return false
   }
 }
-const insecure = isLocalUrl(mempoolBase)
-
 const MAX_BYTES = 5 * 1024 * 1024 // safety cap on response size
 const TIMEOUT_MS = 15000
 
@@ -75,7 +80,10 @@ const get = (url, insecure = false) =>
     req.on('error', () => resolve(null))
     req.end()
   })
-const mempool = (path) => get(`${mempoolBase}/api/v1/${path}`, insecure)
+const mempool = (path, override) => {
+  const url = override || `${mempoolBase}/api/v1/${path}`
+  return get(url, isLocalUrl(url))
+}
 
 const now = new Date()
 const date =
@@ -110,12 +118,18 @@ const [
 ] = await Promise.all([
   mempool('blocks').then((blocks) => blocks?.[0] ?? null),
   mempool('prices'),
-  wantsOnchain ? mempool('fees/precise') : Promise.resolve(null),
-  wantsOnchain ? mempool('fees/mempool-blocks') : Promise.resolve(null),
+  wantsOnchain
+    ? mempool('fees/precise', DISPLAY_MEMPOOL_FEES_URL)
+    : Promise.resolve(null),
+  wantsOnchain
+    ? mempool('fees/mempool-blocks', DISPLAY_MEMPOOL_BLOCKS_URL)
+    : Promise.resolve(null),
   wantsMining ? mempool('mempool') : Promise.resolve(null),
   wantsMining ? mempool('mining/pools/1w') : Promise.resolve(null),
   wantsMining ? mempool('difficulty-adjustment') : Promise.resolve(null),
-  wantsLn ? mempool('lightning/statistics/latest') : Promise.resolve(null),
+  wantsLn
+    ? mempool('lightning/statistics/latest', DISPLAY_MEMPOOL_LIGHTNING_URL)
+    : Promise.resolve(null),
   wantsLn ? mempool('lightning/nodes/countries') : Promise.resolve(null),
   wantsQuote
     ? get('https://www.bitcoin-quotes.com/quotes/random.json')
