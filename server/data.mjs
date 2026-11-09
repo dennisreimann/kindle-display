@@ -110,7 +110,11 @@ const [
 ] = await Promise.all([
   mempool('blocks').then((blocks) => blocks?.[0] ?? null),
   mempool('prices'),
-  wantsOnchain ? mempool('fees/precise') : Promise.resolve(null),
+  // /fees/precise exists only on newer Mempool versions; older ones only
+  // serve /fees/recommended, so fall back when precise returns nothing
+  wantsOnchain
+    ? mempool('fees/precise').then((fees) => fees ?? mempool('fees/recommended'))
+    : Promise.resolve(null),
   wantsOnchain ? mempool('fees/mempool-blocks') : Promise.resolve(null),
   wantsMining ? mempool('mempool') : Promise.resolve(null),
   wantsMining ? mempool('mining/pools/1w') : Promise.resolve(null),
