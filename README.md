@@ -77,6 +77,11 @@ PATH=/bin:/usr/bin:/usr/local/bin
 This example runs every five minutes and references the relevant paths.
 Adapt the cronjob to your needs.
 
+Cron runs are serialized with `flock` when available: an update that is still
+in progress makes the next run skip instead of racing it. The headless Firefox
+call is capped by `FIREFOX_TIMEOUT_SECONDS` (default 120). Failed runs exit
+nonzero and keep the previously generated `display.png`.
+
 ### Docker (optional)
 
 The repository ships a [Dockerfile](server/Dockerfile) that bundles the server,

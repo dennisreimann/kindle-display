@@ -5,8 +5,6 @@ export LC_ALL=C.UTF-8
 dir=$(cd "$(dirname "$0")" && pwd)
 data="$dir/data"
 json="$data/data.json"
-display="$data/display.png"
-screenshot="$data/screenshot.png"
 staging_shot="$data/.screenshot.tmp"
 staging_display="$data/.display.tmp"
 
@@ -21,6 +19,16 @@ cd "$dir" || exit 1
 # load config
 if [ -f .env ]; then
   . ./.env
+fi
+
+# only run one update at a time: if another run is still working, skip this
+# one instead of racing it (the display is being refreshed either way)
+if command -v flock >/dev/null 2>&1; then
+  exec 9>"$data/.cron.lock" || exit 1
+  if ! flock -n 9; then
+    echo "Update already in progress - keeping previous display" >&2
+    exit 0
+  fi
 fi
 
 # generate data
@@ -44,11 +52,22 @@ height=$(node -e '
 echo "Fetched data for block height $height"
 
 # create screenshot: render into a staging file and validate it before
-# publishing, so a failed run keeps the previous display and screenshot
-rm -rf ~/.config/mozilla ~/.cache/mozilla
-killall firefox-esr 2>/dev/null || true
+# publishing, so a failed run keeps the previous display and screenshot.
+# The browser is capped by FIREFOX_TIMEOUT_SECONDS so a hung Firefox can
+# never stall the cron run indefinitely.
 rm -f "$staging_shot" "$staging_display"
-firefox-esr --headless --no-remote --window-size=600,800 "--screenshot=$staging_shot" "http://localhost:${DISPLAY_SERVER_PORT:-3030}" >/dev/null 2>&1
+
+browser_timeout="${FIREFOX_TIMEOUT_SECONDS:-120}"
+if command -v timeout >/dev/null 2>&1; then
+  timeout --foreground --kill-after=10 "$browser_timeout" \
+    firefox-esr --headless --no-remote --window-size=600,800 \
+    "--screenshot=$staging_shot" \
+    "http://localhost:${DISPLAY_SERVER_PORT:-3030}" >/dev/null 2>&1
+else
+  firefox-esr --headless --no-remote --window-size=600,800 \
+    "--screenshot=$staging_shot" \
+    "http://localhost:${DISPLAY_SERVER_PORT:-3030}" >/dev/null 2>&1
+fi
 browser_status=$?
 if [ "$browser_status" -ne 0 ] || ! check_png "$staging_shot"; then
   echo "Screenshot failed (exit $browser_status) - keeping previous display" >&2
@@ -68,5 +87,4 @@ if ! check_png .display.tmp; then
 fi
 mv -f .screenshot.tmp screenshot.png
 mv -f .display.tmp display.png
-cd "$dir"
 echo "Screenshot created - $height"

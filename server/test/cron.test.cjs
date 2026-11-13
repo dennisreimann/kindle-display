@@ -56,9 +56,18 @@ if (process.env.BROWSER_FAIL) {
   console.error(process.env.BROWSER_FAIL)
   process.exit(19)
 }
-if (process.env.BROWSER_HANG) {
-  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 120000)
-  process.exit(0)
+if (process.env.BROWSER_HANG_MS) {
+  process.on('SIGTERM', () => {
+    if (process.env.TEST_LOG) appendFileSync(process.env.TEST_LOG, 'browser killed\\n')
+    process.exit(99)
+  })
+  // timer-based wait so the SIGTERM handler can actually run
+  const until = Date.now() + Number(process.env.BROWSER_HANG_MS)
+  const tick = () => {
+    if (Date.now() < until) setTimeout(tick, 25)
+    else process.exit(0)
+  }
+  tick()
 }
 const flag = args.find((a) => a.startsWith('--screenshot=')) || ''
 const target = flag.slice('--screenshot='.length)
@@ -120,12 +129,12 @@ function fixture(name = 'server') {
   return { parent, dir, bin, log: join(parent, 'tools.log') }
 }
 
-function runCron(f, env = {}) {
+function cronEnv(f, env = {}) {
   const inherited = {}
   for (const [key, value] of Object.entries(process.env)) {
     if (!key.startsWith('DISPLAY_')) inherited[key] = value
   }
-  const result = spawnSync(join(f.dir, 'cron.sh'), [], {
+  return {
     cwd: f.parent,
     env: {
       ...inherited,
@@ -134,8 +143,14 @@ function runCron(f, env = {}) {
       TEST_LOG: f.log,
       ...env,
     },
+  }
+}
+
+function runCron(f, env = {}, spawnTimeoutMs = 30000) {
+  const result = spawnSync(join(f.dir, 'cron.sh'), [], {
+    ...cronEnv(f, env),
     encoding: 'utf8',
-    timeout: 30000,
+    timeout: spawnTimeoutMs,
   })
   assert.equal(result.signal, null, `cron.sh killed by signal: ${result.signal}`)
   return result
@@ -264,4 +279,52 @@ test('converts a real PNG with the real pngcrush and publishes it', () => {
   const display = output(f, 'display.png')
   assert.deepEqual(display.subarray(0, 8), PNG_HEADER)
   assert.ok(display.length > 100, `display too small: ${display.length} bytes`)
+})
+
+const { spawn } = require('node:child_process')
+const { once } = require('node:events')
+
+function spawnCron(f, env = {}) {
+  // stdio is ignored so orphaned children cannot keep the streams open
+  return spawn(join(f.dir, 'cron.sh'), [], { ...cronEnv(f, env), stdio: 'ignore' })
+}
+
+test('a hung browser is killed after FIREFOX_TIMEOUT_SECONDS', () => {
+  const f = fixture()
+  const start = Date.now()
+  const result = runCron(f, { BROWSER_HANG_MS: '2900', FIREFOX_TIMEOUT_SECONDS: '2' }, 8000)
+  assert.notEqual(result.status, 0)
+  assert.match(log(f), /browser killed/)
+  assert.match(diagnostic(result, f), /keeping previous display/)
+  assert.ok(Date.now() - start < 15000, `run took too long: ${Date.now() - start}ms`)
+  assert.equal(output(f, 'display.png').toString(), 'previous display')
+  const leftovers = readdirSync(join(f.dir, 'data')).filter((n) => n.endsWith('.tmp'))
+  assert.deepEqual(leftovers, [])
+})
+
+test('a run is skipped while another update is still in progress', async () => {
+  const f = fixture()
+  const a = spawnCron(f, { BROWSER_HANG_MS: '60000', FIREFOX_TIMEOUT_SECONDS: '10' })
+  const deadline = Date.now() + 10000
+  while (!log(f).includes('firefox-esr')) {
+    if (Date.now() > deadline) throw new Error('run A never reached the browser')
+    spawnSync('sleep', ['0.05'])
+  }
+  const b = runCron(f)
+  assert.equal(b.status, 0, diagnostic(b, f))
+  assert.match(b.stderr, /already in progress/)
+  assert.equal(log(f).split('\n').filter((l) => l.startsWith('firefox-esr')).length, 1)
+  // watchdog for the red phase: cron without a timeout feature would never end
+  const watchdog = setTimeout(() => a.kill('SIGKILL'), 20000)
+  const [code] = await once(a, 'close')
+  clearTimeout(watchdog)
+  assert.notEqual(code, 0, 'run A should fail via browser timeout')
+  assert.equal(output(f, 'display.png').toString(), 'previous display')
+})
+
+test('cron never kills processes by name', () => {
+  const f = fixture()
+  const result = runCron(f)
+  assert.equal(result.status, 0, diagnostic(result, f))
+  assert.doesNotMatch(log(f), /^killall/m)
 })
