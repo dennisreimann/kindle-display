@@ -13,7 +13,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "data": "node data.mjs"
+    "data": "node data.mjs",
+    "test": "node --test test/*.test.cjs"
   },
   "dependencies": {
     "dotenv": "18.0.10",

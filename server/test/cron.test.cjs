@@ -1,0 +1,205 @@
+'use strict'
+
+// Tests for server/cron.sh. Each run gets an isolated server directory with
+// fake node/firefox-esr/pngcrush commands on PATH; the fakes only write to the
+// target paths cron passes to them, so the real repository is never touched.
+// The node fake forwards `node -e` calls to the real node, so cron's actual
+// height extraction code is exercised against the fixture's data.json.
+
+const assert = require('node:assert/strict')
+const {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+} = require('node:fs')
+const { tmpdir } = require('node:os')
+const { join } = require('node:path')
+const { spawnSync } = require('node:child_process')
+const { test } = require('node:test')
+
+const root = join(__dirname, '..')
+const PNG_HEADER = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+const png = (label) => Buffer.concat([PNG_HEADER, Buffer.from(label)])
+const DATA_JSON = JSON.stringify({ block: { height: 875001 } })
+
+const nodeFake = () => `#!${process.execPath}
+const { spawnSync } = require('child_process')
+const { writeFileSync, appendFileSync } = require('fs')
+const args = process.argv.slice(2)
+if (process.env.TEST_LOG) appendFileSync(process.env.TEST_LOG, 'node ' + JSON.stringify(args) + '\\n')
+if (args[0] === 'data.mjs') {
+  if (process.env.NODE_FAIL) {
+    console.error(process.env.NODE_FAIL)
+    process.exit(23)
+  }
+  writeFileSync('data/data.json', process.env.NODE_DATA || ${JSON.stringify(DATA_JSON)})
+  process.exit(0)
+}
+if (args[0] === '-e') {
+  // run cron's real extraction script against the real file
+  const real = spawnSync(${JSON.stringify(process.execPath)}, args, { stdio: 'inherit' })
+  process.exit(real.status === null ? 1 : real.status)
+}
+process.exit(0)
+`
+
+const browserFake = () => `#!${process.execPath}
+const { appendFileSync, writeFileSync } = require('fs')
+const args = process.argv.slice(2)
+if (process.env.TEST_LOG) appendFileSync(process.env.TEST_LOG, 'firefox-esr ' + JSON.stringify(args) + '\\n')
+if (process.env.BROWSER_FAIL) {
+  console.error(process.env.BROWSER_FAIL)
+  process.exit(19)
+}
+if (process.env.BROWSER_HANG) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 120000)
+  process.exit(0)
+}
+const flag = args.find((a) => a.startsWith('--screenshot=')) || ''
+const target = flag.slice('--screenshot='.length)
+if (!target) {
+  console.error('no --screenshot target')
+  process.exit(1)
+}
+writeFileSync(target, Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.from('fresh browser png')]))
+`
+
+const converterFake = () => `#!${process.execPath}
+const { appendFileSync, writeFileSync } = require('fs')
+const args = process.argv.slice(2)
+if (process.env.TEST_LOG) appendFileSync(process.env.TEST_LOG, 'pngcrush ' + JSON.stringify(args) + '\\n')
+const target = args[args.length - 1]
+const mode = process.env.CONVERTER_MODE || 'ok'
+if (mode === 'fail') process.exit(22)
+if (mode === 'empty') process.exit(0)
+if (mode === 'invalid') {
+  writeFileSync(target, Buffer.from('not a png'))
+  process.exit(0)
+}
+writeFileSync(target, Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.from('fresh gray png')]))
+`
+
+const killallFake = () => `#!${process.execPath}
+const { appendFileSync } = require('fs')
+const args = process.argv.slice(1)
+if (process.env.TEST_LOG) appendFileSync(process.env.TEST_LOG, 'killall ' + JSON.stringify(args) + '\\n')
+process.exit(0)
+`
+
+const FAKES = {
+  node: nodeFake,
+  'firefox-esr': browserFake,
+  pngcrush: converterFake,
+  killall: killallFake,
+}
+
+function fixture(name = 'server') {
+  const parent = mkdtempSync(join(tmpdir(), 'kindle-cron-'))
+  const dir = join(parent, name)
+  const bin = join(parent, 'bin')
+  mkdirSync(join(dir, 'data'), { recursive: true })
+  mkdirSync(bin)
+  mkdirSync(join(parent, 'home'))
+  copyFileSync(join(root, 'cron.sh'), join(dir, 'cron.sh'))
+  writeFileSync(join(dir, '.env'), 'DISPLAY_SERVER_PORT=3030\n')
+  writeFileSync(join(dir, 'data', 'data.json'), DATA_JSON)
+  writeFileSync(join(dir, 'data', 'display.png'), 'previous display')
+  writeFileSync(join(dir, 'data', 'screenshot.png'), 'previous screenshot')
+  for (const [tool, fake] of Object.entries(FAKES)) {
+    writeFileSync(join(bin, tool), fake(), { mode: 0o755 })
+  }
+  return { parent, dir, bin, log: join(parent, 'tools.log') }
+}
+
+function runCron(f, env = {}) {
+  const inherited = {}
+  for (const [key, value] of Object.entries(process.env)) {
+    if (!key.startsWith('DISPLAY_')) inherited[key] = value
+  }
+  const result = spawnSync(join(f.dir, 'cron.sh'), [], {
+    cwd: f.parent,
+    env: {
+      ...inherited,
+      HOME: join(f.parent, 'home'),
+      PATH: `${f.bin}:${inherited.PATH || ''}`,
+      TEST_LOG: f.log,
+      ...env,
+    },
+    encoding: 'utf8',
+    timeout: 30000,
+  })
+  assert.equal(result.signal, null, `cron.sh killed by signal: ${result.signal}`)
+  return result
+}
+
+const log = (f) => {
+  try {
+    return readFileSync(f.log, 'utf8')
+  } catch {
+    return ''
+  }
+}
+
+const diagnostic = (result, f) =>
+  `${result.stdout}\n${result.stderr}\n${log(f)}`
+
+const output = (f, name) => readFileSync(join(f.dir, 'data', name))
+
+test('refreshes display and screenshot on a successful run', () => {
+  const f = fixture()
+  const result = runCron(f)
+  assert.equal(result.status, 0, diagnostic(result, f))
+  assert.deepEqual(output(f, 'display.png'), png('fresh gray png'))
+  assert.deepEqual(output(f, 'screenshot.png'), png('fresh browser png'))
+  assert.match(result.stdout, /875001/)
+})
+
+test('works when the server directory path contains spaces', () => {
+  const f = fixture('server with spaces')
+  const result = runCron(f)
+  assert.equal(result.status, 0, diagnostic(result, f))
+  assert.deepEqual(output(f, 'display.png'), png('fresh gray png'))
+})
+
+test('a failed data pipeline aborts before rendering', () => {
+  const f = fixture()
+  const result = runCron(f, { NODE_FAIL: 'mempool unavailable' })
+  assert.notEqual(result.status, 0)
+  assert.match(diagnostic(result, f), /mempool unavailable/)
+  assert.doesNotMatch(log(f), /firefox-esr/)
+  assert.equal(output(f, 'display.png').toString(), 'previous display')
+})
+
+for (const [name, data] of [
+  ['invalid JSON', '{oops'],
+  ['missing block', '{"rates":[]}'],
+  ['missing height', '{"block":{}}'],
+  ['null block', '{"block":null}'],
+]) {
+  test(`invalid block data (${name}) aborts before rendering`, () => {
+    const f = fixture()
+    const result = runCron(f, { NODE_DATA: data })
+    assert.notEqual(result.status, 0, diagnostic(result, f))
+    assert.match(diagnostic(result, f), /Invalid block data/)
+    assert.doesNotMatch(log(f), /firefox-esr/)
+    assert.equal(output(f, 'display.png').toString(), 'previous display')
+  })
+}
+
+test('defaults to port 3030 when DISPLAY_SERVER_PORT is unset', () => {
+  const f = fixture()
+  writeFileSync(join(f.dir, '.env'), 'DISPLAY_RATE1="USD"\n')
+  const result = runCron(f)
+  assert.equal(result.status, 0, diagnostic(result, f))
+  assert.match(log(f), /http:\/\/localhost:3030/)
+})
+
+test('uses the port from .env', () => {
+  const f = fixture()
+  writeFileSync(join(f.dir, '.env'), 'DISPLAY_SERVER_PORT=3999\n')
+  const result = runCron(f)
+  assert.equal(result.status, 0, diagnostic(result, f))
+  assert.match(log(f), /http:\/\/localhost:3999/)
+})
