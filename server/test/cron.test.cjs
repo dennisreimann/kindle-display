@@ -11,6 +11,7 @@ const {
   copyFileSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   writeFileSync,
 } = require('node:fs')
@@ -20,6 +21,8 @@ const { spawnSync } = require('node:child_process')
 const { test } = require('node:test')
 
 const root = join(__dirname, '..')
+const SAMPLE_PNG = join(root, '..', 'samples', 'plain.png')
+const PNGCRUSH = '/usr/bin/pngcrush'
 const PNG_HEADER = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
 const png = (label) => Buffer.concat([PNG_HEADER, Buffer.from(label)])
 const DATA_JSON = JSON.stringify({ block: { height: 875001 } })
@@ -46,7 +49,7 @@ process.exit(0)
 `
 
 const browserFake = () => `#!${process.execPath}
-const { appendFileSync, writeFileSync } = require('fs')
+const { readFileSync, appendFileSync, writeFileSync } = require('fs')
 const args = process.argv.slice(2)
 if (process.env.TEST_LOG) appendFileSync(process.env.TEST_LOG, 'firefox-esr ' + JSON.stringify(args) + '\\n')
 if (process.env.BROWSER_FAIL) {
@@ -63,7 +66,11 @@ if (!target) {
   console.error('no --screenshot target')
   process.exit(1)
 }
-writeFileSync(target, Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.from('fresh browser png')]))
+if (process.env.BROWSER_COPY) {
+  writeFileSync(target, readFileSync(process.env.BROWSER_COPY))
+} else {
+  writeFileSync(target, Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.from('fresh browser png')]))
+}
 `
 
 const converterFake = () => `#!${process.execPath}
@@ -202,4 +209,59 @@ test('uses the port from .env', () => {
   const result = runCron(f)
   assert.equal(result.status, 0, diagnostic(result, f))
   assert.match(log(f), /http:\/\/localhost:3999/)
+})
+
+test('a browser failure keeps the previous display and screenshot', () => {
+  const f = fixture()
+  const result = runCron(f, { BROWSER_FAIL: 'Firefox crashed on startup' })
+  assert.notEqual(result.status, 0)
+  assert.match(diagnostic(result, f), /keeping previous display/)
+  assert.equal(output(f, 'display.png').toString(), 'previous display')
+  assert.equal(output(f, 'screenshot.png').toString(), 'previous screenshot')
+})
+
+for (const [name, mode] of [
+  ['exits nonzero', 'fail'],
+  ['writes no output', 'empty'],
+  ['writes a non-PNG', 'invalid'],
+]) {
+  test(`converter ${name} keeps the previous display and fails`, () => {
+    const f = fixture()
+    const result = runCron(f, { CONVERTER_MODE: mode })
+    assert.equal(result.status, 1, diagnostic(result, f))
+    assert.match(diagnostic(result, f), /keeping previous display/)
+    assert.equal(output(f, 'display.png').toString(), 'previous display')
+  })
+}
+
+test('renders and converts into staging files, not the live images', () => {
+  const f = fixture()
+  const result = runCron(f)
+  assert.equal(result.status, 0, diagnostic(result, f))
+  const browserLine = log(f).split('\n').find((l) => l.startsWith('firefox-esr'))
+  assert.match(browserLine, /--screenshot=[^"]*\.screenshot\.tmp/)
+  const converterLine = log(f).split('\n').find((l) => l.startsWith('pngcrush'))
+  assert.match(converterLine, /\.screenshot\.tmp/)
+  assert.match(converterLine, /\.display\.tmp/)
+  assert.doesNotMatch(converterLine, /display\.png/)
+})
+
+for (const env of [{}, { CONVERTER_MODE: 'invalid' }]) {
+  test(`leaves no staging files behind (${Object.keys(env).length ? 'failure' : 'success'})`, () => {
+    const f = fixture()
+    const result = runCron(f, env)
+    assert.equal(result.status, Object.keys(env).length ? 1 : 0, diagnostic(result, f))
+    const leftovers = readdirSync(join(f.dir, 'data')).filter((n) => n.endsWith('.tmp'))
+    assert.deepEqual(leftovers, [])
+  })
+}
+
+test('converts a real PNG with the real pngcrush and publishes it', () => {
+  const f = fixture()
+  writeFileSync(join(f.bin, 'pngcrush'), `#!/bin/sh\nexec ${PNGCRUSH} "$@"\n`, { mode: 0o755 })
+  const result = runCron(f, { BROWSER_COPY: SAMPLE_PNG })
+  assert.equal(result.status, 0, diagnostic(result, f))
+  const display = output(f, 'display.png')
+  assert.deepEqual(display.subarray(0, 8), PNG_HEADER)
+  assert.ok(display.length > 100, `display too small: ${display.length} bytes`)
 })
