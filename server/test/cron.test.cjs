@@ -22,7 +22,16 @@ const { test } = require('node:test')
 
 const root = join(__dirname, '..')
 const SAMPLE_PNG = join(root, '..', 'samples', 'plain.png')
-const PNGCRUSH = '/usr/bin/pngcrush'
+
+// real pngcrush for the integration test; skipped when it is not installed
+const PNGCRUSH = (() => {
+  const { execFileSync } = require('node:child_process')
+  try {
+    return execFileSync('which', ['pngcrush'], { encoding: 'utf8' }).trim()
+  } catch {
+    return ''
+  }
+})()
 const PNG_HEADER = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
 const png = (label) => Buffer.concat([PNG_HEADER, Buffer.from(label)])
 const DATA_JSON = JSON.stringify({ block: { height: 875001 } })
@@ -271,7 +280,7 @@ for (const env of [{}, { CONVERTER_MODE: 'invalid' }]) {
   })
 }
 
-test('converts a real PNG with the real pngcrush and publishes it', () => {
+test('converts a real PNG with the real pngcrush and publishes it', { skip: !PNGCRUSH && 'pngcrush not installed' }, () => {
   const f = fixture()
   writeFileSync(join(f.bin, 'pngcrush'), `#!/bin/sh\nexec ${PNGCRUSH} "$@"\n`, { mode: 0o755 })
   const result = runCron(f, { BROWSER_COPY: SAMPLE_PNG })
