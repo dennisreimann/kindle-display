@@ -57,6 +57,10 @@ echo "Fetched data for block height $height"
 # never stall the cron run indefinitely.
 rm -f "$staging_shot" "$staging_display"
 
+# remove stale Firefox config and cache to avoid stale state (e.g. a hung browser
+# or a previous run that crashed) from affecting the current run.
+rm -rf ~/.config/mozilla ~/.cache/mozilla
+
 browser_timeout="${FIREFOX_TIMEOUT_SECONDS:-120}"
 if command -v timeout >/dev/null 2>&1; then
   timeout --foreground --kill-after=10 "$browser_timeout" \
